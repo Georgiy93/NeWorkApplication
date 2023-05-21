@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">NeWorkApplication</string>
+    <string name="description_post_author_avatar">Post author avatar</string>
+    <string name="description_post_menu">Post menu</string>
+    <string name="description_post_like">Like</string>
+    <string name="description_sign_up">Sign up</string>
+    <string name="description_post_share">Share</string>
+    <string name="sign_out">Sign Out </string>
+    <string name="menu_save">Save</string>
+    <string name="empty_posts">There are no posts.\nIf you create a new post, it will appear here</string>
+    <string name="add_post">Add_post</string>
+    <string name="retry_loading">Retry</string>
+    <string name="error_loading">Error</string>
+    <string name="description_photo">Photo</string>
+    <string name="remove">Remove</string>
+    <string name="menu_remove">Remove</string>
+    <string name="menu_edit">Edit</string>
+</resources>

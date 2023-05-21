@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.SignUpActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/common_spacing">
+
+        <ImageView
+            android:id="@+id/label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginBottom="512dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/signUpText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Up"
+            android:textSize="40dp"
+            android:textStyle="bold"
+            android:textColor="#FF5567"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/description_sign_up"
+            tools:ignore="MissingConstraints"
+            app:layout_constraintTop_toBottomOf="@+id/label" />
+
+        <EditText
+            android:id="@+id/createLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:hint="Enter your login"
+            android:paddingTop="16dp"
+
+
+            android:paddingBottom="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toStartOf="@+id/signUpText"
+            app:layout_constraintTop_toBottomOf="@+id/signUpText" />
+
+        <EditText
+            android:id="@+id/createPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:hint="Enter your Password"
+            android:paddingTop="16dp"
+
+
+            android:paddingBottom="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/createLogin" />
+
+        <EditText
+            android:id="@+id/createName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:paddingTop="16dp"
+            android:paddingRight="256dp"
+            android:paddingBottom="16dp"
+            android:hint="Name"
+
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/createPassword" />
+
+        <Button
+            android:id="@+id/chooseAvatar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Choose avatar"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="256dp"
+            android:layout_marginTop="24dp"
+
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toStartOf="@+id/createPassword"
+            app:layout_constraintTop_toBottomOf="@+id/createName" />
+
+        <ImageView
+            android:id="@+id/avatarImageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="56dp"
+            android:layout_marginBottom="24dp"
+            android:src="@drawable/baseline_account_circle_24"
+            app:layout_constraintBottom_toBottomOf="@+id/signUp"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toEndOf="@+id/chooseAvatar"
+            app:layout_constraintTop_toTopOf="@+id/createName" />
+
+        <Button
+            android:id="@+id/signUp"
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Sign Up"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintStart_toStartOf="parent"
+
+
+            app:layout_constraintTop_toBottomOf="@+id/chooseAvatar" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

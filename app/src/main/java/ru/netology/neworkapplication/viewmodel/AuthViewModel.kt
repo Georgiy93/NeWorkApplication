@@ -1,0 +1,85 @@
+package ru.netology.neworkapplication.viewmodel
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.launch
+import retrofit2.Response
+import ru.netology.neworkapplication.dto.LoginRequest
+import ru.netology.neworkapplication.dto.LoginResponse
+import ru.netology.neworkapplication.dto.RegistrationRequest
+import ru.netology.neworkapplication.dto.RegistrationResponse
+import ru.netology.neworkapplication.repository.AuthRepository
+import javax.inject.Inject
+
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val userRepository: AuthRepository,
+) : ViewModel() {
+
+    private val _registrationLoading = MutableLiveData(false)
+    val registrationLoading: LiveData<Boolean> = _registrationLoading
+
+    private val _registrationResult = MutableLiveData<ApiResponse<RegistrationResponse>>()
+    val registrationResult: LiveData<ApiResponse<RegistrationResponse>> = _registrationResult
+
+    private val _registrationError = MutableLiveData<String>()
+    val registrationError: LiveData<String> = _registrationError
+
+    private val _loginLoading = MutableLiveData(false)
+    val loginLoading: LiveData<Boolean> = _loginLoading
+
+    private val _loginResult = MutableLiveData<Boolean>()
+    val loginResult: LiveData<Boolean> = _loginResult
+
+    private val _loginError = MutableLiveData<String>()
+    val loginError: LiveData<String> = _loginError
+
+
+    fun register(registrationRequest: RegistrationRequest) {
+        _registrationLoading.value = true
+        viewModelScope.launch {
+            try {
+                val response = userRepository.register(registrationRequest)
+                _registrationLoading.value = false
+                if (response.isSuccessful) {
+                    _registrationResult.value = ApiResponse(response.body(), response.code(), null)
+                } else {
+                    _registrationResult.value =
+                        ApiResponse(null, response.code(), response.message())
+                }
+            } catch (e: Exception) {
+                _registrationLoading.value = false
+                _registrationError.value = e.localizedMessage
+            }
+        }
+    }
+
+
+    fun login(loginRequest: LoginRequest) {
+        _loginLoading.value = true
+        viewModelScope.launch {
+            try {
+                val response = userRepository.login(loginRequest)
+                _loginLoading.value = false
+                if (response.isSuccessful) {
+                    _loginResult.value = true
+                } else {
+                    _loginResult.value = false
+                    _loginError.value = response.message()
+                }
+            } catch (e: Exception) {
+                _loginLoading.value = false
+                _loginError.value = e.localizedMessage
+            }
+        }
+    }
+}
+
+data class ApiResponse<T>(
+    val responseBody: T?,
+    val statusCode: Int,
+    val errorMessage: String?
+)
