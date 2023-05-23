@@ -1,6 +1,6 @@
 package ru.netology.neworkapplication.ui
 
-import android.content.Intent
+
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import com.google.android.material.snackbar.Snackbar
@@ -90,9 +91,13 @@ class FeedFragment : Fragment() {
             adapter.refresh()
         }
 
+
+
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
+
+
 
         return binding.root
     }

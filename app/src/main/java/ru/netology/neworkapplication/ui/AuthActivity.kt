@@ -9,6 +9,8 @@ import androidx.lifecycle.Observer
 
 
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.neworkapplication.databinding.ActivityAuthBinding
 import ru.netology.neworkapplication.dto.LoginRequest
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
@@ -30,8 +32,12 @@ class AuthActivity : AppCompatActivity() {
                 val login = login.text.toString().trim()
                 val password = password.text.toString().trim()
                 if (login.isNotBlank() && password.isNotBlank()) {
-                    val loginRequest = LoginRequest(login, password)
-                    viewModel.login(loginRequest)
+                    val loginRequestBody = login.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val passwordRequestBody =
+                        password.toRequestBody("text/plain".toMediaTypeOrNull())
+                    viewModel.login(loginRequestBody, passwordRequestBody)
+                    val intent = Intent(this@AuthActivity, FeedActivity::class.java)
+                    startActivity(intent)
                 } else {
                     Toast.makeText(
                         this@AuthActivity,

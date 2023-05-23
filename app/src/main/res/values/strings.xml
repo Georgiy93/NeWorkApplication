@@ -15,4 +15,6 @@
     <string name="remove">Remove</string>
     <string name="menu_remove">Remove</string>
     <string name="menu_edit">Edit</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
 </resources>

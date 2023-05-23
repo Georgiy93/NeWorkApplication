@@ -1,20 +1,33 @@
 package ru.netology.neworkapplication.api
 
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 import ru.netology.neworkapplication.dto.*
 
 interface ApiService {
 
+    @Multipart
     @POST("/api/users/registration/")
-    suspend fun register(@Body registration: RegistrationRequest): Response<RegistrationResponse>
+    suspend fun register(
+        @Part("avatar") avatarUrl: RequestBody?,
+        @Part("login") login: RequestBody,
+        @Part("password") password: RequestBody,
+        @Part("name") name: RequestBody
+    ): Response<RegistrationResponse>
 
     @POST("/api/users/authentication/")
-    suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
+    @Multipart
+    suspend fun login(
+        @Part("login") login: RequestBody,
+        @Part("password") password: RequestBody
+    ): Response<LoginResponse>
+
 
     @POST("/api/posts")
-    suspend fun save(@Body post: Post): Response<Post>
+    @Multipart
+    suspend fun save(@Part("post") post: RequestBody): Response<Post>
 
     @GET("/api/posts/latest")
     suspend fun getLatest(@Query("count") count: Int): Response<List<Post>>
@@ -42,7 +55,6 @@ interface ApiService {
 
     @GET("/api/posts/{id}/after")
     suspend fun getAfter(@Path("id") id: Long, @Query("count") count: Int): Response<List<Post>>
-//    @Multipart
-//    @POST("media")
-//    suspend fun upload(@Part media: MultipartBody.Part): Response<Media>
+
+
 }

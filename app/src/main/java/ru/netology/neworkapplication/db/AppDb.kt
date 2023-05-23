@@ -10,11 +10,10 @@ import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 
 @Database(
     entities = [PostEntity::class, PostRemoteKeyEntity::class],
-    version = 1,
+    version = 1, // Increment the version number here
     exportSchema = false
 )
 abstract class AppDb : RoomDatabase() {
     abstract fun postDao(): PostDao
     abstract fun postRemoteKeyDao(): PostRemoteKeyDao
-
 }

@@ -1,19 +1,25 @@
 package ru.netology.neworkapplication.ui
 
-import android.content.Context
+import android.content.ContentResolver
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
+import android.util.Base64
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.neworkapplication.databinding.ActivitySignupBinding
 import ru.netology.neworkapplication.dto.LoginRequest
 import ru.netology.neworkapplication.dto.RegistrationRequest
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -21,12 +27,13 @@ class SignUpActivity : AppCompatActivity() {
 
     private val viewModel: AuthViewModel by viewModels()
     private lateinit var binding: ActivitySignupBinding
-    private var avatarUri: String? = null
+    private var avatarUri: String? = ""
+
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent())
     { uri: Uri? ->
         uri?.let {
             binding.avatarImageView.setImageURI(uri)
-            avatarUri = uri.toString()  // change here
+            avatarUri = uri.toString()
         }
     }
 
@@ -37,29 +44,17 @@ class SignUpActivity : AppCompatActivity() {
 
         binding.apply {
             chooseAvatar.setOnClickListener {
-                openImagePicker()
+                pickImage.launch("image/*")
             }
             signUp.setOnClickListener {
                 val login = createLogin.text.toString()
                 val password = createPassword.text.toString()
                 val name = createName.text.toString()
-                val avatar = avatarUri
-                if (login.isNotBlank() && password.isNotBlank()) {
-                    val registerRequest = RegistrationRequest(login, password, name, avatar)
-                    viewModel.register(registerRequest)
-                } else {
-                    Toast.makeText(
-                        this@SignUpActivity,
-                        "Please fill out all fields",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+
+
+                viewModel.register(avatarUri, login, password, name)
             }
         }
-
-//        viewModel.registrationLoading.observe(this, { isLoading ->
-//            binding.registrationProgress.visibility = if (isLoading) View.VISIBLE else View.GONE
-//        })
 
         viewModel.registrationResult.observe(this, { response ->
             if (response.responseBody != null) {
@@ -75,18 +70,16 @@ class SignUpActivity : AppCompatActivity() {
                     "Registration failed. Server response code: ${response.statusCode}, error message: ${response.errorMessage}",
                     Toast.LENGTH_SHORT
                 ).show()
-
             }
         })
-
-
-        viewModel.registrationError.observe(this, { error ->
-            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
-        })
     }
+}
 
-    private fun openImagePicker() {
-        pickImage.launch("image/*")
-    }
-
+fun uriToBase64(uri: Uri, contentResolver: ContentResolver): String {
+    val inputStream = contentResolver.openInputStream(uri)
+    val bitmap = BitmapFactory.decodeStream(inputStream)
+    val baos = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+    val byteArray = baos.toByteArray()
+    return Base64.encodeToString(byteArray, Base64.DEFAULT)
 }

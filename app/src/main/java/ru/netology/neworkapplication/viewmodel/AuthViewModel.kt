@@ -6,6 +6,10 @@ import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 import ru.netology.neworkapplication.dto.LoginRequest
 import ru.netology.neworkapplication.dto.LoginResponse
@@ -38,11 +42,26 @@ class AuthViewModel @Inject constructor(
     val loginError: LiveData<String> = _loginError
 
 
-    fun register(registrationRequest: RegistrationRequest) {
+    fun register(
+        avatarUrl: String?,
+        login: String,
+        password: String,
+        name: String
+    ) {
         _registrationLoading.value = true
         viewModelScope.launch {
             try {
-                val response = userRepository.register(registrationRequest)
+                val avatarRequestBody = avatarUrl?.toRequestBody("text/plain".toMediaTypeOrNull())
+                val loginRequestBody = login.toRequestBody("text/plain".toMediaTypeOrNull())
+                val passwordRequestBody = password.toRequestBody("text/plain".toMediaTypeOrNull())
+                val nameRequestBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val response = userRepository.register(
+                    avatarRequestBody,
+                    loginRequestBody,
+                    passwordRequestBody,
+                    nameRequestBody
+                )
                 _registrationLoading.value = false
                 if (response.isSuccessful) {
                     _registrationResult.value = ApiResponse(response.body(), response.code(), null)
@@ -57,12 +76,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-
-    fun login(loginRequest: LoginRequest) {
+    fun login(login: RequestBody, password: RequestBody) {
         _loginLoading.value = true
         viewModelScope.launch {
             try {
-                val response = userRepository.login(loginRequest)
+                val response = userRepository.login(login, password)
                 _loginLoading.value = false
                 if (response.isSuccessful) {
                     _loginResult.value = true
@@ -76,6 +94,7 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
 }
 
 data class ApiResponse<T>(

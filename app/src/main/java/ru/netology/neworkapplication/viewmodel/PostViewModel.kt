@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,6 +20,7 @@ import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.model.FeedModelState
 import ru.netology.neworkapplication.repository.PostRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
+import java.io.File
 
 import javax.inject.Inject
 
@@ -30,7 +32,7 @@ private val empty = Post(
     authorAvatar = "",
     likedByMe = false,
     likes = 0,
-    published = 0,
+    published = "",
 )
 
 //private val noPhoto = PhotoModel()
@@ -41,7 +43,9 @@ class PostViewModel @Inject constructor(
     auth: AppAuth,
 ) : ViewModel() {
     private val cached = repository.data.cachedIn(viewModelScope)
-
+    private val _imageUri = MutableLiveData<Uri?>()
+    val imageUri: LiveData<Uri?>
+        get() = _imageUri
     private val _messageError = SingleLiveEvent<String>()
     val messageError: LiveData<String>
         get() = _messageError
@@ -80,7 +84,6 @@ class PostViewModel @Inject constructor(
         try {
             _dataState.value = FeedModelState(loading = true)
             repository.getAll()
-            _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
         }
@@ -90,19 +93,16 @@ class PostViewModel @Inject constructor(
         try {
             _dataState.value = FeedModelState(refreshing = true)
             repository.getAll()
-            _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
         }
     }
 
     fun save() {
-        edited.value?.let {
+        edited.value?.let { post ->
             viewModelScope.launch {
                 try {
-                    repository.save(it)
-
-
+                    repository.save(post)
                     _postCreated.value = Unit
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -110,8 +110,9 @@ class PostViewModel @Inject constructor(
             }
         }
         edited.value = empty
-//        _photo.value = noPhoto
+        _imageUri.value = null
     }
+
 
     fun edit(post: Post) {
         edited.value = post

@@ -1,9 +1,16 @@
 package ru.netology.neworkapplication.repository
 
 import androidx.paging.*
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
@@ -13,16 +20,19 @@ import ru.netology.neworkapplication.dto.*
 
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.toEntity
+import ru.netology.neworkapplication.enumeration.AttachmentType
 
 import ru.netology.neworkapplication.error.ApiError
 import ru.netology.neworkapplication.error.AppError
 import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
+import java.io.File
 
 
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class PostRepositoryImpl @Inject constructor(
@@ -45,15 +55,8 @@ class PostRepositoryImpl @Inject constructor(
         ).flow
             .map { pagingData ->
                 pagingData.map(PostEntity::toDto)
+
             }
-//                    .insertSeparators { previous, _ ->
-//                        if (previous?.id?.rem(5) == 0L) {
-//                            Ad(Random.nextLong(), "figma.jpg")
-//                        } else {
-//                            null
-//                        }
-//                    }
-    //}
 
 
     override suspend fun getAll() {
@@ -90,13 +93,11 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun save(post: Post) {
         try {
-//            val postWithAttachment = upload?.let {
-//                upload(it)
-//            }?.let {
-//                // TODO: add support for other types
-//                post.copy(attachment = Attachment(it.id, AttachmentType.IMAGE))
-//            }
-            val response = apiService.save(post)
+            val gson = Gson()
+            val postJson = gson.toJson(post)
+            val postRequestBody = postJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+            val response = apiService.save(postRequestBody)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -139,22 +140,5 @@ class PostRepositoryImpl @Inject constructor(
 
     }
 
-//    override suspend fun upload(upload: MediaUpload): Media {
-//        try {
-//            val media = MultipartBody.Part.createFormData(
-//                "file", upload.file.name, upload.file.asRequestBody()
-//            )
-//
-//            val response = apiService.upload(media)
-//            if (!response.isSuccessful) {
-//                throw ApiError(response.code(), response.message())
-//            }
-//
-//            return response.body() ?: throw ApiError(response.code(), response.message())
-//        } catch (e: IOException) {
-//            throw NetworkError
-//        } catch (e: Exception) {
-//            throw UnknownError
-//        }
-//    }
+
 }

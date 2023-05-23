@@ -80,16 +80,6 @@
             app:layout_constraintTop_toBottomOf="@id/header"
             tools:text="@sample/posts.json/data/content" />
 
-        <ImageView
-            android:id="@+id/kitty"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/kitty"
-            app:layout_constraintTop_toBottomOf="@+id/content"
-            app:layout_constraintBottom_toBottomOf="@+id/footer" />
 
         <TextView
             android:id="@+id/link"
@@ -101,7 +91,7 @@
             android:layout_marginBottom="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/kitty"
+
             app:layout_constraintBottom_toBottomOf="@+id/footer"
             tools:text="http://netolo.gy/fyb" />
 
