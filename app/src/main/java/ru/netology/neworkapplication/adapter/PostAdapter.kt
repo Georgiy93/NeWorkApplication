@@ -4,27 +4,37 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.neworkapplication.BuildConfig
 import ru.netology.neworkapplication.R
 
 import ru.netology.neworkapplication.databinding.CardPostBinding
 import ru.netology.neworkapplication.dto.FeedItem
+import ru.netology.neworkapplication.dto.Job
 import ru.netology.neworkapplication.dto.Post
+import ru.netology.neworkapplication.util.TokenManager
 import ru.netology.neworkapplication.view.loadCircleCrop
+import java.text.SimpleDateFormat
+import java.util.*
 
 interface OnInteractionListener {
+
     fun onLike(post: Post) {}
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
+    fun onEditNavigate(post: Post) {}
 
 }
 
 class PostsAdapter(
     private val onInteractionListener: OnInteractionListener,
-) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(PostDiffCallback()) {
+    private val tokenManager: TokenManager,
+
+    ) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(PostDiffCallback()) {
     override fun getItemViewType(position: Int): Int =
         when (getItem(position)) {
 
@@ -37,7 +47,7 @@ class PostsAdapter(
             R.layout.card_post -> {
                 val binding =
                     CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                return PostViewHolder(binding, onInteractionListener)
+                return PostViewHolder(binding, onInteractionListener, tokenManager)
             }
 
             else -> error("unknown item type: $viewType")
@@ -71,23 +81,49 @@ class PostDiffCallback : DiffUtil.ItemCallback<FeedItem>() {
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
+    private val tokenManager: TokenManager,
+    //private val job: Job
 ) : RecyclerView.ViewHolder(binding.root) {
+
     fun bind(post: Post) {
+
         binding.apply {
             author.text = post.author
-            published.text = post.published.toString()
-            content.text = post.content
-            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
-            like.isChecked = post.likedByMe
-            like.text = "${post.likes}"
 
-            menu.visibility = if (post.ownedByMe) View.VISIBLE else View.INVISIBLE
+            val originalFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
+            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.US)
+            originalFormat.timeZone = TimeZone.getTimeZone("UTC") // if the original time is in UTC
+            val date = originalFormat.parse(post.published)
+
+            published.text = if (date != null) targetFormat.format(date) else "Unknown date"
+
+            authorJob.text = post.authorJob
+            content.text = post.content
+            post.authorAvatar?.let {
+                Glide.with(itemView.context)
+                    .load(it)
+                    .into(avatar)
+            }
+
+            like.isChecked = post.likedByMe
+            if (post.attachment == null) {
+                image.visibility = View.GONE
+            } else {
+                post.attachment?.url?.let {
+                    Glide.with(itemView.context)
+                        .load(it)
+                        .into(image)
+                }
+            }
+
+            menu.visibility = if (post.authorId == tokenManager.getId())
+                View.VISIBLE else View.INVISIBLE
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
-                    // TODO: if we don't have other options, just remove dots
-                    menu.setGroupVisible(R.id.owned, post.ownedByMe)
+
+
                     setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.remove -> {
@@ -95,7 +131,10 @@ class PostViewHolder(
                                 true
                             }
                             R.id.edit -> {
-                                onInteractionListener.onEdit(post)
+                                if (post.authorId == tokenManager.getId()) {
+                                    onInteractionListener.onEditNavigate(post)
+                                }
+
                                 true
                             }
 

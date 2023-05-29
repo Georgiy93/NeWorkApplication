@@ -36,8 +36,7 @@ class AuthActivity : AppCompatActivity() {
                     val passwordRequestBody =
                         password.toRequestBody("text/plain".toMediaTypeOrNull())
                     viewModel.login(loginRequestBody, passwordRequestBody)
-                    val intent = Intent(this@AuthActivity, FeedActivity::class.java)
-                    startActivity(intent)
+
                 } else {
                     Toast.makeText(
                         this@AuthActivity,

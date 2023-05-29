@@ -1,4 +1,4 @@
-package ru.netology.neworkapplication.repository
+package ru.netology.neworkapplication.repository.wall
 
 import dagger.Binds
 import dagger.Module
@@ -10,8 +10,8 @@ import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
-interface RepositoryModule {
+interface WallModule {
     @Singleton
     @Binds
-    fun bindsPostRepository(impl: PostRepositoryImpl): PostRepository
+    fun bindsWallRepository(impl: WallRepositoryImpl): WallRepository
 }

@@ -17,4 +17,12 @@
     <string name="menu_edit">Edit</string>
     <string name="sign_up">Sign Up</string>
     <string name="sign_in">Sign In</string>
+    <string name="wall">Wall</string>
+    <string name="description_NETAPP">NETAPP</string>
+    <string name="attachment">attachment</string>
+    <string name="Job">job</string>
+    <string name="job">job</string>
+    <string name="add_job">add Job</string>
+    <string name="back_on_post_layout">Back_on_post_layout</string>
+    <string name="description_select_photo">select photo</string>
 </resources>

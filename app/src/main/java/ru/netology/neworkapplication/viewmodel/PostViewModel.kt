@@ -1,6 +1,7 @@
 package ru.netology.neworkapplication.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,9 +19,9 @@ import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dto.FeedItem
 import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.model.FeedModelState
+import ru.netology.neworkapplication.model.PhotoModel
 import ru.netology.neworkapplication.repository.PostRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
-import java.io.File
 
 import javax.inject.Inject
 
@@ -30,12 +31,15 @@ private val empty = Post(
     authorId = 0,
     author = "",
     authorAvatar = "",
+    authorJob = "",
     likedByMe = false,
-    likes = 0,
-    published = "",
-)
 
-//private val noPhoto = PhotoModel()
+    published = "",
+
+    )
+
+private val noPhoto = PhotoModel()
+
 @HiltViewModel
 @ExperimentalCoroutinesApi
 class PostViewModel @Inject constructor(
@@ -49,6 +53,7 @@ class PostViewModel @Inject constructor(
     private val _messageError = SingleLiveEvent<String>()
     val messageError: LiveData<String>
         get() = _messageError
+    private val editedContent = MutableLiveData("")
 
     val data: Flow<PagingData<FeedItem>> = auth.authStateFlow
         .flatMapLatest { (myId, _) ->
@@ -68,20 +73,23 @@ class PostViewModel @Inject constructor(
         get() = _dataState
 
     private val edited = MutableLiveData(empty)
+    private val job = MutableLiveData(empty)
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+    private val _photo = MutableLiveData(noPhoto)
+    val photo: LiveData<PhotoModel>
+        get() = _photo
 
-//    private val _photo = MutableLiveData(noPhoto)
-//    val photo: LiveData<PhotoModel>
-//        get() = _photo
 
     init {
         loadPosts()
+
     }
 
     fun loadPosts() = viewModelScope.launch {
         try {
+
             _dataState.value = FeedModelState(loading = true)
             repository.getAll()
         } catch (e: Exception) {
@@ -114,8 +122,19 @@ class PostViewModel @Inject constructor(
     }
 
 
-    fun edit(post: Post) {
-        edited.value = post
+    fun edit(postId: Int) {
+        viewModelScope.launch {
+            try {
+                val post = repository.getPost(postId)  // Get post by id from repository
+                if (post != null) {
+                    edited.value = post
+                } else {
+                    _messageError.value = "Post not found"
+                }
+            } catch (e: Exception) {
+                _messageError.value = e.message
+            }
+        }
     }
 
     fun changeContent(content: String) {
@@ -126,9 +145,11 @@ class PostViewModel @Inject constructor(
         edited.value = edited.value?.copy(content = text)
     }
 
-//    fun changePhoto(uri: Uri?) {
-//      //  _photo.value = PhotoModel(uri)
-//    }
+    fun changePhoto(uri: Uri?) {
+        Log.d("NewPostFragment", "Changing photo to: $uri")
+        _photo.value = PhotoModel(uri)
+    }
+
 
     fun likeById(post: Post) {
 
@@ -147,7 +168,7 @@ class PostViewModel @Inject constructor(
 
     }
 
-    fun removeById(id: Long) {
+    fun removeById(id: Int) {
         viewModelScope.launch {
             try {
                 repository.removeById(id)

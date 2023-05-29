@@ -43,24 +43,26 @@ class AuthViewModel @Inject constructor(
 
 
     fun register(
-        avatarUrl: String?,
+
         login: String,
         password: String,
-        name: String
+        name: String,
+        avatarUrl: String,
     ) {
         _registrationLoading.value = true
         viewModelScope.launch {
             try {
-                val avatarRequestBody = avatarUrl?.toRequestBody("text/plain".toMediaTypeOrNull())
+                val avatarRequestBody = avatarUrl.toRequestBody("text/plain".toMediaTypeOrNull())
                 val loginRequestBody = login.toRequestBody("text/plain".toMediaTypeOrNull())
                 val passwordRequestBody = password.toRequestBody("text/plain".toMediaTypeOrNull())
                 val nameRequestBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
 
                 val response = userRepository.register(
-                    avatarRequestBody,
+
                     loginRequestBody,
                     passwordRequestBody,
-                    nameRequestBody
+                    nameRequestBody,
+                    avatarRequestBody,
                 )
                 _registrationLoading.value = false
                 if (response.isSuccessful) {

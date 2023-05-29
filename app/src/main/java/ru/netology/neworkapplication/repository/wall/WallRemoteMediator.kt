@@ -1,4 +1,4 @@
-package ru.netology.neworkapplication.repository
+package ru.netology.neworkapplication.repository.wall
 
 import androidx.paging.*
 import androidx.room.withTransaction
@@ -10,26 +10,30 @@ import ru.netology.neworkapplication.dto.PostRemoteKeyDao
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
+import ru.netology.neworkapplication.util.TokenManager
 
 
 import java.io.IOException
 
 
 @OptIn(ExperimentalPagingApi::class)
-class PostRemoteMediator(
+class WallRemoteMediator(
     private val postDao: PostDao,
     private val service: ApiService,
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
 
-    ) : RemoteMediator<Int, PostEntity>() {
+    private val tokenManager: TokenManager,
+) : RemoteMediator<Int, PostEntity>() {
 
 
     override suspend fun load(
         loadType: LoadType,
+
         state: PagingState<Int, PostEntity>
     ): MediatorResult {
 
+        val token = tokenManager.getToken()
         try {
 
 
@@ -41,9 +45,9 @@ class PostRemoteMediator(
                     val id = postRemoteKeyDao.max()
 
                     if (id == null) {
-                        service.getLatest(state.config.pageSize)
+                        service.getWallLatest(token, state.config.pageSize)
                     } else {
-                        service.getAfter(id, state.config.pageSize)
+                        service.getWallAfter(token, id, state.config.pageSize)
                     }
                 }
 
@@ -51,7 +55,7 @@ class PostRemoteMediator(
                 LoadType.APPEND -> {
 
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
-                    service.getBefore(id, state.config.pageSize)
+                    service.getWallBefore(token, id, state.config.pageSize)
 
                 }
                 else -> {
@@ -69,7 +73,7 @@ class PostRemoteMediator(
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                       // postDao.clear()
+                        //postDao.clear()
 
                         if (!data.isNullOrEmpty()) {
 

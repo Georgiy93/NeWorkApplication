@@ -1,16 +1,12 @@
 package ru.netology.neworkapplication.repository
 
+import android.util.Log
 import androidx.paging.*
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 
 import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
@@ -20,19 +16,17 @@ import ru.netology.neworkapplication.dto.*
 
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.toEntity
-import ru.netology.neworkapplication.enumeration.AttachmentType
 
 import ru.netology.neworkapplication.error.ApiError
 import ru.netology.neworkapplication.error.AppError
 import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
-import java.io.File
+import ru.netology.neworkapplication.util.TokenManager
 
 
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 class PostRepositoryImpl @Inject constructor(
@@ -40,7 +34,9 @@ class PostRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
-) : PostRepository {
+    private val tokenManager: TokenManager,
+
+    ) : PostRepository {
     @OptIn(ExperimentalPagingApi::class)
     override val data: Flow<PagingData<FeedItem>> =
         Pager(
@@ -61,13 +57,19 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun getAll() {
         try {
-            val response = apiService.getAll()
+            val token = tokenManager.getToken() // Get the token
+
+            val response = apiService.getAll(token)
+            Log.d("apiService.getAll", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
+
+
             postDao.insert(body.toEntity())
+
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -93,11 +95,10 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun save(post: Post) {
         try {
-            val gson = Gson()
-            val postJson = gson.toJson(post)
-            val postRequestBody = postJson.toRequestBody("application/json".toMediaTypeOrNull())
-
-            val response = apiService.save(postRequestBody)
+            val token = tokenManager.getToken() // Get the token
+            val authHeader = token
+            val response = apiService.save(authHeader, post)
+            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -107,12 +108,15 @@ class PostRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
+            e.printStackTrace()
             throw UnknownError
         }
     }
 
-    override suspend fun removeById(id: Long) {
-        val response = apiService.removeById(id)
+
+    override suspend fun removeById(id: Int) {
+        val token = tokenManager.getToken()
+        val response = apiService.removeById(token, id.toString())
         if (!response.isSuccessful) {
             throw HttpException(response)
         }
@@ -121,24 +125,63 @@ class PostRepositoryImpl @Inject constructor(
     }
 
     override suspend fun likeById(post: Post) {
-
+        val token = tokenManager.getToken()
         val likedByMeValue = post.likedByMe
         val postResponse = apiService.let {
             if (likedByMeValue)
-                it.dislikeById(post.id)
+                it.dislikeById(token, post.id.toString())
             else
-                it.likeById(post.id)
+                it.likeById(token, post.id.toString())
+
         }
         if (!postResponse.isSuccessful) {
             throw HttpException(postResponse)
 
         }
         val updatedPost = postResponse.body() ?: throw HttpException(postResponse)
+
         val postEntity = PostEntity.fromDto(updatedPost)
         postDao.insert(postEntity)
 
 
     }
 
+    override suspend fun getPost(id: Int): Post {
+        try {
+            val token = tokenManager.getToken() // Get the token
+            val authHeader = token
+            val response = apiService.getPost(authHeader, id)
+            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            return body // Returns the post as DTO
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw UnknownError
+        }
+    }
+
+    override suspend fun upload(upload: MediaUpload): Media {
+        try {
+            val media = MultipartBody.Part.createFormData(
+                "file", upload.file.name, upload.file.asRequestBody()
+            )
+
+            val response = apiService.upload(media)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            return response.body() ?: throw ApiError(response.code(), response.message())
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
 
 }

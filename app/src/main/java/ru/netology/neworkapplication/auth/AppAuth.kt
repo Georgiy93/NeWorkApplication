@@ -33,10 +33,10 @@ class AppAuth @Inject constructor(
     private val _authStateFlow: MutableStateFlow<AuthState>
 
     init {
-        val id = prefs.getLong(idKey, 0)
+        val id = prefs.getLong(idKey, 0).toInt()
         val token = prefs.getString(tokenKey, null)
 
-        if (id == 0L || token == null) {
+        if (id == 0 || token == null) {
             _authStateFlow = MutableStateFlow(AuthState())
             with(prefs.edit()) {
                 clear()
@@ -49,53 +49,7 @@ class AppAuth @Inject constructor(
 
     val authStateFlow: StateFlow<AuthState> = _authStateFlow.asStateFlow()
 
-//    @InstallIn(SingletonComponent::class)
-//    @EntryPoint
-//    interface AppAuthEntryPoint {
-//        fun apiService(): ApiService
-//    }
 
-//    @Synchronized
-//    fun setAuth(id: Long, token: String) {
-//        _authStateFlow.value = AuthState(id, token)
-//        with(prefs.edit()) {
-//            putLong(idKey, id)
-//            putString(tokenKey, token)
-//            apply()
-//        }
-//        sendPushToken()
-//    }
-//
-//    @Synchronized
-//    fun removeAuth() {
-//        _authStateFlow.value = AuthState()
-//        with(prefs.edit()) {
-//            clear()
-//            apply()
-//        }
-//        sendPushToken()
-//    }
-//
-//    fun sendPushToken(token: String? = null) {
-//        CoroutineScope(Dispatchers.Default).launch {
-//            try {
-//                val pushToken = PushToken(token ?: Firebase.messaging.token.await())
-//                val entryPoint =
-//                    EntryPointAccessors.fromApplication(context, AppAuthEntryPoint::class.java)
-//                entryPoint.apiService().save(pushToken)
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            }
-//        }
-//    }
-
-//    private fun getApiService(context: Context): ApiService {
-//        val hiltEntryPoint = EntryPointAccessors.fromApplication(
-//            context,
-//            AppAuthEntryPoint::class.java
-//        )
-//        return hiltEntryPoint.apiService()
-//    }
 }
 
-data class AuthState(val id: Long = 0, val token: String? = null)
+data class AuthState(val id: Int = 0, val token: String? = null)

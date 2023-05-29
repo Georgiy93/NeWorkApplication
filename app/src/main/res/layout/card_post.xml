@@ -42,12 +42,26 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/common_spacing"
             android:layout_marginEnd="@dimen/common_spacing"
-            android:layout_marginBottom="@dimen/common_spacing"
-            app:layout_constraintBottom_toBottomOf="@id/header"
+
+            app:layout_constraintBottom_toBottomOf="@+id/authorJob"
             app:layout_constraintEnd_toStartOf="@id/menu"
             app:layout_constraintStart_toEndOf="@id/avatar"
             app:layout_constraintTop_toBottomOf="@id/author"
             tools:text="@sample/posts.json/data/published" />
+
+        <TextView
+            android:id="@+id/authorJob"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/common_spacing"
+            android:layout_marginEnd="@dimen/common_spacing"
+            android:layout_marginTop="@dimen/common_spacing"
+            android:layout_marginBottom="@dimen/common_spacing"
+            app:layout_constraintTop_toBottomOf="@+id/published"
+            app:layout_constraintEnd_toStartOf="@id/menu"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintBottom_toBottomOf="@+id/header"
+            tools:text="Job" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu"
@@ -102,6 +116,17 @@
             app:barrierDirection="bottom"
             app:constraint_referenced_ids="content" />
 
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="380dp"
+            android:layout_height="256dp"
+            android:layout_marginBottom="@dimen/common_spacing"
+            android:contentDescription="@string/attachment"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/footer" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/like"
             android:layout_width="wrap_content"
@@ -109,12 +134,11 @@
             android:checkable="true"
             android:contentDescription="@string/description_post_like"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/footer"
+            app:layout_constraintTop_toBottomOf="@+id/image"
             app:icon="@drawable/ic_like_24dp"
             tools:checked="@sample/posts.json/data/likedByMe"
-            tools:text="@sample/posts.json/data/likes"
-            style="@style/Widget.AppTheme.LikeCheckBox" />
 
+            style="@style/Widget.AppTheme.LikeCheckBox" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -3,32 +3,40 @@ package ru.netology.neworkapplication.entity
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+
 import ru.netology.neworkapplication.dto.Post
 
 @Entity
 data class PostEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Long,
-    val authorId: Long,
+    val id: Int,
+    val authorId: Int,
     val author: String,
     val authorAvatar: String?,
+    val authorJob: String?,
     val content: String,
     val published: String,
     val likedByMe: Boolean,
-    val likes: Int = 0,
+    val ownedByMe: Boolean,
+    val mentionedMe: Boolean,
+
     @Embedded
     var attachment: AttachmentEmbeddable?,
-) {
+
+    ) {
     fun toDto() = Post(
         id,
         authorId,
         author,
         authorAvatar,
+        authorJob,
         content,
         published,
         likedByMe,
-        likes,
+
         attachment?.toDto(),
+        ownedByMe,
+        mentionedMe,
     )
 
     companion object {
@@ -38,12 +46,15 @@ data class PostEntity(
                 dto.authorId,
                 dto.author,
                 dto.authorAvatar,
+                dto.authorJob,
                 dto.content,
                 dto.published,
                 dto.likedByMe,
-                dto.likes,
-                AttachmentEmbeddable.fromDto(dto.attachment)
-            )
+                dto.ownedByMe,
+                dto.mentionedMe,
+                AttachmentEmbeddable.fromDto(dto.attachment),
+
+                )
 
     }
 }
