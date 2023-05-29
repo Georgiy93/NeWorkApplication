@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -30,7 +31,8 @@ class SignUpActivity : AppCompatActivity() {
 
     private val viewModel: AuthViewModel by viewModels()
     private lateinit var binding: ActivitySignupBinding
-
+    private lateinit var getImage: ActivityResultLauncher<String>
+    private var avatarUrl: String = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,10 +40,15 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        getImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                avatarUrl = getPath(uri) ?: ""
+            }
+        }
+
         binding.apply {
-            var avatarUrl = ""
             chooseAvatar.setOnClickListener {
-                avatarUrl = avatarImageView.text.toString()
+                getImage.launch("image/*")
             }
 
             signUp.setOnClickListener {
@@ -72,5 +79,16 @@ class SignUpActivity : AppCompatActivity() {
         })
     }
 
+    fun getPath(uri: Uri?): String? {
+        if (uri == null) return null
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+        if (cursor != null) {
+            val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            cursor.moveToFirst()
+            return cursor.getString(column_index)
+        }
+        return uri.path
+    }
 }
 

@@ -90,20 +90,20 @@
             app:layout_constraintStart_toStartOf="@+id/createPassword"
             app:layout_constraintTop_toBottomOf="@+id/createName" />
 
-        <EditText
+        <ImageView
             android:id="@+id/avatarImageView"
-            android:layout_width="224dp"
-            android:layout_height="64dp"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
             android:layout_gravity="center"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="96dp"
+            android:layout_marginStart="56dp"
+            android:layout_marginTop="28dp"
             android:scaleType="centerCrop"
 
-            android:hint="Insert the url of the avatar"
+            android:src="@drawable/baseline_account_circle_24"
 
             app:layout_constraintEnd_toEndOf="parent"
 
-
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/chooseAvatar"
             app:layout_constraintTop_toBottomOf="@+id/createName" />
 
