@@ -16,11 +16,13 @@ import ru.netology.neworkapplication.dto.*
 
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.toEntity
+import ru.netology.neworkapplication.enumeration.AttachmentType
 
 import ru.netology.neworkapplication.error.ApiError
 import ru.netology.neworkapplication.error.AppError
 import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
+import ru.netology.neworkapplication.model.MediaModel
 import ru.netology.neworkapplication.util.TokenManager
 
 
@@ -47,6 +49,7 @@ class PostRepositoryImpl @Inject constructor(
                 postDao = postDao,
                 postRemoteKeyDao = postRemoteKeyDao,
                 appDb = appDb,
+                tokenManager = tokenManager
             )
         ).flow
             .map { pagingData ->
@@ -80,7 +83,9 @@ class PostRepositoryImpl @Inject constructor(
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(120_000L)
-            val response = apiService.getNewer(id)
+            val token = tokenManager.getToken() // Get the token
+            val authHeader = token
+            val response = apiService.getNewer(authHeader, id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -98,6 +103,33 @@ class PostRepositoryImpl @Inject constructor(
             val token = tokenManager.getToken() // Get the token
             val authHeader = token
             val response = apiService.save(authHeader, post)
+            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.insert(PostEntity.fromDto(body))
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw UnknownError
+        }
+    }
+
+    override suspend fun saveWithAttachment(post: Post, upload: MediaModel) {
+        try {
+            val token = tokenManager.getToken() // Get the token
+            val authHeader = token
+
+            val media = upload(upload)
+
+
+            val postWithAttachment =
+                post.copy(attachment = Attachment(media.url, AttachmentType.IMAGE))
+
+            val response = apiService.save(authHeader, postWithAttachment ?: post)
             Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -165,13 +197,17 @@ class PostRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun upload(upload: MediaUpload): Media {
+    private suspend fun upload(media: MediaModel): Media {
         try {
-            val media = MultipartBody.Part.createFormData(
-                "file", upload.file.name, upload.file.asRequestBody()
-            )
+            val token = tokenManager.getToken()
 
-            val response = apiService.upload(media)
+            val part = MultipartBody.Part.createFormData(
+                "file",
+                media.file.name,
+                media.file.asRequestBody()
+            )
+            val response = apiService.upload(token, part)
+            Log.d("media", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.repository
 
+import android.util.Log
 import androidx.paging.*
 import androidx.room.withTransaction
 import retrofit2.HttpException
@@ -10,6 +11,7 @@ import ru.netology.neworkapplication.dto.PostRemoteKeyDao
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
+import ru.netology.neworkapplication.util.TokenManager
 
 
 import java.io.IOException
@@ -21,15 +23,15 @@ class PostRemoteMediator(
     private val service: ApiService,
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
-
-    ) : RemoteMediator<Int, PostEntity>() {
+    private val tokenManager: TokenManager,
+) : RemoteMediator<Int, PostEntity>() {
 
 
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, PostEntity>
     ): MediatorResult {
-
+        val token = tokenManager.getToken()
         try {
 
 
@@ -41,9 +43,14 @@ class PostRemoteMediator(
                     val id = postRemoteKeyDao.max()
 
                     if (id == null) {
-                        service.getLatest(state.config.pageSize)
+                        service.getLatest(token, state.config.pageSize)
                     } else {
-                        service.getAfter(id, state.config.pageSize)
+                        val response = service.getAfter(token, id, state.config.pageSize)
+                        Log.d(
+                            "service.getAfter",
+                            "Response: ${response.code()} - ${response.message()}"
+                        )
+                        response
                     }
                 }
 
@@ -51,7 +58,12 @@ class PostRemoteMediator(
                 LoadType.APPEND -> {
 
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
-                    service.getBefore(id, state.config.pageSize)
+                    val response = service.getBefore(token, id, state.config.pageSize)
+                    Log.d(
+                        "service.getBefore",
+                        "Response: ${response.code()} - ${response.message()}"
+                    )
+                    response
 
                 }
                 else -> {

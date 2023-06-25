@@ -12,6 +12,5 @@ interface WallRepository {
     suspend fun getAll()
     fun getNewerCount(id: Long): Flow<Int>
 
-
 }
 

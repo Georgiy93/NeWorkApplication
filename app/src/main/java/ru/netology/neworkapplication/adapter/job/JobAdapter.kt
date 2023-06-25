@@ -1,5 +1,7 @@
 package ru.netology.neworkapplication.adapter.job
 
+import android.app.DatePickerDialog
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
@@ -12,6 +14,8 @@ import ru.netology.neworkapplication.databinding.CardJobBinding
 import ru.netology.neworkapplication.dto.FeedItemJob
 import ru.netology.neworkapplication.dto.Job
 import ru.netology.neworkapplication.util.TokenManager
+import java.text.SimpleDateFormat
+import java.util.*
 
 interface OnInteractionListener {
 
@@ -25,99 +29,72 @@ interface OnInteractionListener {
 class JobAdapter(
     private val onInteractionListener: OnInteractionListener,
     private val tokenManager: TokenManager
+) : RecyclerView.Adapter<JobAdapter.JobViewHolder>() {
 
-) : PagingDataAdapter<FeedItemJob, RecyclerView.ViewHolder>(JobDiffCallback()) {
-    override fun getItemViewType(position: Int): Int =
-        when (getItem(position)) {
+    private var jobs: List<Job> = emptyList()
 
-            is Job -> R.layout.card_job
-            null -> error("unknown item type")
-        }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        when (viewType) {
-            R.layout.card_job -> {
-                val binding =
-                    CardJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                return JobViewHolder(binding, onInteractionListener, tokenManager)
-            }
-
-            else -> error("unknown item type: $viewType")
-        }
-
+    fun submitList(jobs: List<Job>) {
+        this.jobs = jobs
+        notifyDataSetChanged()
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = getItem(position)) {
+    override fun getItemCount(): Int = jobs.size
 
-            is Job -> (holder as? JobViewHolder)?.bind(item)
-            null -> error("unknown item type")
-        }
-
-    }
-}
-
-class JobDiffCallback : DiffUtil.ItemCallback<FeedItemJob>() {
-    override fun areItemsTheSame(oldItem: FeedItemJob, newItem: FeedItemJob): Boolean {
-        if (oldItem::class != newItem::class) {
-            return false
-        }
-        return oldItem.id == newItem.id
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobViewHolder {
+        val binding = CardJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return JobViewHolder(binding, onInteractionListener, tokenManager)
     }
 
-    override fun areContentsTheSame(oldItem: FeedItemJob, newItem: FeedItemJob): Boolean {
-        return oldItem == newItem
+    override fun onBindViewHolder(holder: JobViewHolder, position: Int) {
+        holder.bind(jobs[position])
     }
-}
 
-class JobViewHolder(
-    private val binding: CardJobBinding,
-    private val onInteractionListener: OnInteractionListener,
-    private val tokenManager: TokenManager,
 
+//class JobDiffCallback : DiffUtil.ItemCallback<FeedItemJob>() {
+//    override fun areItemsTheSame(oldItem: FeedItemJob, newItem: FeedItemJob): Boolean {
+//        if (oldItem::class != newItem::class) {
+//            return false
+//        }
+//        return oldItem.id == newItem.id
+//    }
+//
+//    override fun areContentsTheSame(oldItem: FeedItemJob, newItem: FeedItemJob): Boolean {
+//        return oldItem == newItem
+//    }
+//}
+
+    class JobViewHolder(
+        private val binding: CardJobBinding,
+        private val onInteractionListener: OnInteractionListener,
+        private val tokenManager: TokenManager
     ) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(job: Job) {
+        fun bind(job: Job) {
+            binding.apply {
+                name.text = job.name
+                position.text = job.position
+                start.text = job.start
+                finish.text = job.finish
 
-        binding.apply {
-            name.text = job.name
+                menu.setOnClickListener {
+                    PopupMenu(it.context, it).apply {
+                        inflate(R.menu.options_post)
 
-
-
-            position.text = job.position
-            start.text = job.start
-            finish.text = job.finish
-
-
-
-
-
-
-            menu.setOnClickListener {
-                PopupMenu(it.context, it).apply {
-                    inflate(R.menu.options_post)
-
-
-                    setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.remove -> {
-                                onInteractionListener.onRemoveJob(job)
-                                true
+                        setOnMenuItemClickListener { item ->
+                            when (item.itemId) {
+                                R.id.remove -> {
+                                    onInteractionListener.onRemoveJob(job)
+                                    true
+                                }
+                                R.id.edit -> {
+                                    onInteractionListener.onEditNavigateJob(job)
+                                    true
+                                }
+                                else -> false
                             }
-                            R.id.edit -> {
-
-                                onInteractionListener.onEditNavigateJob(job)
-
-
-                                true
-                            }
-
-                            else -> false
                         }
-                    }
-                }.show()
+                    }.show()
+                }
             }
-
-
         }
     }
 }

@@ -1,20 +1,14 @@
 package ru.netology.neworkapplication.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.Response
-import ru.netology.neworkapplication.dto.LoginRequest
-import ru.netology.neworkapplication.dto.LoginResponse
-import ru.netology.neworkapplication.dto.RegistrationRequest
 import ru.netology.neworkapplication.dto.RegistrationResponse
+import ru.netology.neworkapplication.dto.RequestLogin
 import ru.netology.neworkapplication.repository.AuthRepository
 import javax.inject.Inject
 
@@ -47,12 +41,14 @@ class AuthViewModel @Inject constructor(
         login: String,
         password: String,
         name: String,
-        avatarUrl: String,
-    ) {
+        avatar: ByteArray?,
+
+        ) {
         _registrationLoading.value = true
         viewModelScope.launch {
             try {
-                val avatarRequestBody = avatarUrl.toRequestBody("text/plain".toMediaTypeOrNull())
+                val avatarRequestBody = avatar?.toRequestBody("image/*".toMediaTypeOrNull())
+                    ?.let { MultipartBody.Part.createFormData("file", "file", it) }
                 val loginRequestBody = login.toRequestBody("text/plain".toMediaTypeOrNull())
                 val passwordRequestBody = password.toRequestBody("text/plain".toMediaTypeOrNull())
                 val nameRequestBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -78,11 +74,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun login(login: RequestBody, password: RequestBody) {
+    fun login(request: RequestLogin) {
         _loginLoading.value = true
         viewModelScope.launch {
             try {
-                val response = userRepository.login(login, password)
+                val response = userRepository.login(request)
                 _loginLoading.value = false
                 if (response.isSuccessful) {
                     _loginResult.value = true

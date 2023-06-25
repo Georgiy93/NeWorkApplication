@@ -1,14 +1,15 @@
 package ru.netology.neworkapplication.repository
 
 
+import android.util.Log
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import ru.netology.neworkapplication.api.ApiService
-import ru.netology.neworkapplication.dto.LoginRequest
+
 import ru.netology.neworkapplication.dto.LoginResponse
-import ru.netology.neworkapplication.dto.RegistrationRequest
 import ru.netology.neworkapplication.dto.RegistrationResponse
+import ru.netology.neworkapplication.dto.RequestLogin
 import ru.netology.neworkapplication.util.TokenManager
 import javax.inject.Inject
 
@@ -22,7 +23,7 @@ class AuthRepository @Inject constructor(
         login: RequestBody,
         password: RequestBody,
         name: RequestBody,
-        avatar: RequestBody,
+        avatar: MultipartBody.Part?,
     ): Response<RegistrationResponse> {
         val response = apiService.register(login, password, name, avatar)
         if (response.isSuccessful) {
@@ -37,8 +38,8 @@ class AuthRepository @Inject constructor(
         return response
     }
 
-    suspend fun login(login: RequestBody, password: RequestBody): Response<LoginResponse> {
-        val response = apiService.login(login, password)
+    suspend fun login(request: RequestLogin): Response<LoginResponse> {
+        val response = apiService.login(request)
         if (response.isSuccessful) {
             response.body()?.let { loginResponse ->
                 loginResponse.token?.let { token ->
@@ -48,6 +49,7 @@ class AuthRepository @Inject constructor(
                 }
             }
         }
+        Log.d("login", "Response: ${response.code()} - ${response.message()}")
         return response
     }
 

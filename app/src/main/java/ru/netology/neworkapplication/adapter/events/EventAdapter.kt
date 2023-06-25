@@ -1,22 +1,5 @@
 package ru.netology.neworkapplication.adapter.events
 
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.PopupMenu
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
-import ru.netology.neworkapplication.R
-
-import ru.netology.neworkapplication.databinding.CardPostBinding
-import ru.netology.neworkapplication.dto.FeedItem
-import ru.netology.neworkapplication.dto.Post
-import ru.netology.neworkapplication.util.TokenManager
-import ru.netology.neworkapplication.view.loadCircleCrop
-import java.text.SimpleDateFormat
-import java.util.*
-
 //interface OnInteractionListener {
 //
 //    fun onLike(post: Post) {}

@@ -71,8 +71,8 @@ class FeedFragment : Fragment() {
                     replace(R.id.container, EditPostFragment().apply {
                         arguments = Bundle().apply {
                             putString("content", post.content)
-                            // pass post content
-                            putInt("id", post.id) // pass post id
+
+                            putInt("id", post.id)
                         }
                     })
                     addToBackStack(null)
@@ -134,7 +134,7 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Load the post you want to edit when the fragment is created
+
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

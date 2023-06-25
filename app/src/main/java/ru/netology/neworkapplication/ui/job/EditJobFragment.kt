@@ -81,13 +81,23 @@ class EditJobFragment : Fragment() {
                 when (menuItem.itemId) {
                     R.id.save -> {
                         fragmentBinding?.let {
-                            viewModel.changeContent(it.name.text.toString())
-                            viewModel.changeContent(it.position.text.toString())
-                            viewModel.changeContent(it.start.text.toString())
-                            viewModel.changeContent(it.finish.text.toString())
-                            viewModel.save()  // Save the changes when the save button is clicked
+                            viewModel.changeName(it.name.text.toString())
+                            viewModel.changePosition(it.position.text.toString())
+                            viewModel.changeStart(it.start.text.toString())
+
+                            if (it.finish.text.toString().isEmpty()) {
+                                viewModel.changeFinish(null)
+                            } else {
+                                viewModel.changeFinish(it.finish.text.toString())
+                            }
+                            if (it.link.text.toString().isEmpty()) {
+
+                                viewModel.changeLink(null)
+                            } else {
+                                viewModel.changeLink(it.link.text.toString())
+                            }
+                            viewModel.save()
                             AndroidUtils.hideKeyboard(requireView())
-                            //requireActivity().supportFragmentManager.popBackStack()
                         }
                         parentFragmentManager.commit {
                             replace(R.id.container, JobFragment())
@@ -95,7 +105,6 @@ class EditJobFragment : Fragment() {
                         }
                         true
                     }
-
                     else -> false
                 }
 

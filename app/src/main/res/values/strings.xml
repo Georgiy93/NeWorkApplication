@@ -25,4 +25,6 @@
     <string name="add_job">add Job</string>
     <string name="back_on_post_layout">Back_on_post_layout</string>
     <string name="description_select_photo">select photo</string>
+    <string name="photo_error">Error loading photo</string>
+    <string name="empty_jobs">There are not jobs</string>
 </resources>

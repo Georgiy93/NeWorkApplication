@@ -15,7 +15,8 @@ data class JobEntity(
     val name: String,
     val position: String,
     val start: String,
-    val finish: String,
+    val finish: String?,
+    val link: String?,
 
 
     ) {
@@ -25,8 +26,8 @@ data class JobEntity(
         position,
         start,
         finish,
-
-        )
+        link,
+    )
 
     companion object {
         fun fromDto(dto: Job) =
@@ -36,8 +37,8 @@ data class JobEntity(
                 dto.position,
                 dto.start,
                 dto.finish,
-
-                )
+                dto.link,
+            )
 
     }
 }

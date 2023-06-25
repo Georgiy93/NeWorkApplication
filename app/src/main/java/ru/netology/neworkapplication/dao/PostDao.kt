@@ -32,8 +32,9 @@ interface PostDao {
     suspend fun insert(posts: List<PostEntity>)
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
-    suspend fun removeById(id: kotlin.Int)
+    suspend fun removeById(id: Int)
 
     @Query("DELETE FROM PostEntity")
     suspend fun clear()
+
 }

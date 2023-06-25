@@ -36,13 +36,11 @@ class JobRepositoryImpl @Inject constructor(
     override val data: Flow<PagingData<FeedItemJob>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = { jobDao.getPagingSource() },
-    ).flow
-        .map { pagingData ->
-            pagingData.map(JobEntity::toDto)
+    ).flow.map { pagingData ->
+        pagingData.map(JobEntity::toDto)
+    }
 
-        }
-
-    override suspend fun getJobAll() {
+    override suspend fun getJobAll(token: String): List<Job> {
         try {
             val token = tokenManager.getToken() // Get the token
 
@@ -56,7 +54,7 @@ class JobRepositoryImpl @Inject constructor(
 
 
             jobDao.insert(body.toEntity())
-
+            return body
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -65,12 +63,12 @@ class JobRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun saveJob(job: Job) {
+    override suspend fun saveJob(job: Job, token: String) {
         try {
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
-            val response = apiService.saveJob(authHeader, job)
-            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+            val authToken = tokenManager.getToken()
+
+            val response = apiService.saveJob(authToken, job)
+            Log.d("JobRepository", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -80,15 +78,20 @@ class JobRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
+            Log.e(
+                "JobRepository",
+                "Error in saveJob: ",
+                e
+            ) // Logs the exception message and stack trace
             e.printStackTrace()
             throw UnknownError
         }
     }
 
 
-    override suspend fun removeJobById(id: Int) {
+    override suspend fun removeJobById(id: Int, token: String) {
         val token = tokenManager.getToken()
-        val response = apiService.removeJobById(token, id.toString())
+        val response = apiService.removeJobById(id, token)
         if (!response.isSuccessful) {
             throw HttpException(response)
         }
@@ -99,10 +102,9 @@ class JobRepositoryImpl @Inject constructor(
 
     override suspend fun getJob(id: Int): Job {
         try {
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
-            val response = apiService.getJob(authHeader, id)
-            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+
+            val response = apiService.getJob(id)
+            Log.d("JobRepository", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

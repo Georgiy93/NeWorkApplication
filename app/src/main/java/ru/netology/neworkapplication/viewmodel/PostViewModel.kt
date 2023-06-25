@@ -1,7 +1,6 @@
 package ru.netology.neworkapplication.viewmodel
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,13 +14,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import okhttp3.MultipartBody
 import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dto.FeedItem
 import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.model.FeedModelState
-import ru.netology.neworkapplication.model.PhotoModel
+import ru.netology.neworkapplication.model.MediaModel
 import ru.netology.neworkapplication.repository.PostRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
+import java.io.File
 
 import javax.inject.Inject
 
@@ -38,7 +39,7 @@ private val empty = Post(
 
     )
 
-private val noPhoto = PhotoModel()
+
 
 @HiltViewModel
 @ExperimentalCoroutinesApi
@@ -73,13 +74,14 @@ class PostViewModel @Inject constructor(
         get() = _dataState
 
     private val edited = MutableLiveData(empty)
-    private val job = MutableLiveData(empty)
+    val editedPost: LiveData<Post>
+        get() = edited
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
-    private val _photo = MutableLiveData(noPhoto)
-    val photo: LiveData<PhotoModel>
-        get() = _photo
+    private val _media = MutableLiveData<MediaModel?>(null)
+    val media: LiveData<MediaModel?>
+        get() = _media
 
 
     init {
@@ -97,28 +99,35 @@ class PostViewModel @Inject constructor(
         }
     }
 
-    fun refreshPosts() = viewModelScope.launch {
-        try {
-            _dataState.value = FeedModelState(refreshing = true)
-            repository.getAll()
-        } catch (e: Exception) {
-            _dataState.value = FeedModelState(error = true)
-        }
+
+    fun changePhoto(file: File, uri: Uri?) {
+        _media.value = MediaModel(uri, file)
+    }
+
+    fun clearPhoto() {
+        _media.value = null
     }
 
     fun save() {
-        edited.value?.let { post ->
+        edited.value?.let {
             viewModelScope.launch {
                 try {
-                    repository.save(post)
+                    when (val media = media.value) {
+                        null -> repository.save(it)
+                        else -> {
+                            repository.saveWithAttachment(it, media)
+                        }
+                    }
+
                     _postCreated.value = Unit
+                    _dataState.value = FeedModelState()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    _dataState.value = FeedModelState(error = true)
                 }
+
             }
         }
         edited.value = empty
-        _imageUri.value = null
     }
 
 
@@ -143,11 +152,6 @@ class PostViewModel @Inject constructor(
             return
         }
         edited.value = edited.value?.copy(content = text)
-    }
-
-    fun changePhoto(uri: Uri?) {
-        Log.d("NewPostFragment", "Changing photo to: $uri")
-        _photo.value = PhotoModel(uri)
     }
 
 
@@ -179,4 +183,5 @@ class PostViewModel @Inject constructor(
             }
         }
     }
+
 }

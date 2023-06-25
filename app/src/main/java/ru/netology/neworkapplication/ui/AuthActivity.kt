@@ -5,16 +5,14 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 
 
 import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.neworkapplication.databinding.ActivityAuthBinding
-import ru.netology.neworkapplication.dto.LoginRequest
+import ru.netology.neworkapplication.dto.RequestLogin
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AuthActivity : AppCompatActivity() {
@@ -32,11 +30,8 @@ class AuthActivity : AppCompatActivity() {
                 val login = login.text.toString().trim()
                 val password = password.text.toString().trim()
                 if (login.isNotBlank() && password.isNotBlank()) {
-                    val loginRequestBody = login.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val passwordRequestBody =
-                        password.toRequestBody("text/plain".toMediaTypeOrNull())
-                    viewModel.login(loginRequestBody, passwordRequestBody)
-
+                    val loginRequest = RequestLogin(login, password)
+                    viewModel.login(loginRequest)
                 } else {
                     Toast.makeText(
                         this@AuthActivity,
@@ -65,8 +60,6 @@ class AuthActivity : AppCompatActivity() {
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
         })
 
-//        viewModel.loginLoading.observe(this, { isLoading ->
-//            binding.loginProgress.visibility = if (isLoading) View.VISIBLE else View.GONE
-//        })
+
     }
 }

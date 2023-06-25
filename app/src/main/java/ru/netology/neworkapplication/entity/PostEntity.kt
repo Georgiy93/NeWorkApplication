@@ -3,8 +3,10 @@ package ru.netology.neworkapplication.entity
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.netology.neworkapplication.dto.Attachment
 
 import ru.netology.neworkapplication.dto.Post
+
 
 @Entity
 data class PostEntity(
@@ -16,12 +18,15 @@ data class PostEntity(
     val authorJob: String?,
     val content: String,
     val published: String,
+
     val likedByMe: Boolean,
+
     val ownedByMe: Boolean,
     val mentionedMe: Boolean,
 
+
     @Embedded
-    var attachment: AttachmentEmbeddable?,
+    var attachment: Attachment?,
 
     ) {
     fun toDto() = Post(
@@ -34,10 +39,11 @@ data class PostEntity(
         published,
         likedByMe,
 
-        attachment?.toDto(),
+        attachment,
         ownedByMe,
         mentionedMe,
-    )
+
+        )
 
     companion object {
         fun fromDto(dto: Post) =
@@ -50,9 +56,11 @@ data class PostEntity(
                 dto.content,
                 dto.published,
                 dto.likedByMe,
+
                 dto.ownedByMe,
                 dto.mentionedMe,
-                AttachmentEmbeddable.fromDto(dto.attachment),
+
+                dto.attachment,
 
                 )
 

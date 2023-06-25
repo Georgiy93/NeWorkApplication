@@ -8,7 +8,6 @@ import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
@@ -16,24 +15,19 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.neworkapplication.R
-import ru.netology.neworkapplication.adapter.OnInteractionListener
-import ru.netology.neworkapplication.adapter.PostLoadingStateAdapter
-import ru.netology.neworkapplication.adapter.PostsAdapter
+
 import ru.netology.neworkapplication.adapter.wall.WallAdapter
+import ru.netology.neworkapplication.adapter.wall.WallLoadingStateAdapter
 import ru.netology.neworkapplication.auth.AppAuth
-import ru.netology.neworkapplication.databinding.FragmentFeedBinding
 import ru.netology.neworkapplication.databinding.FragmentWallBinding
-import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.ui.AuthActivity
-import ru.netology.neworkapplication.ui.EditPostFragment
-import ru.netology.neworkapplication.ui.NewPostFragment
 import ru.netology.neworkapplication.util.TokenManager
-import ru.netology.neworkapplication.viewmodel.PostViewModel
+import ru.netology.neworkapplication.viewmodel.WallViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class WallFeedFragment : Fragment() {
-    private val viewModel: PostViewModel by activityViewModels()
+    private val viewModel: WallViewModel by activityViewModels()
 
     @Inject
     lateinit var tokenManager: TokenManager
@@ -53,9 +47,9 @@ class WallFeedFragment : Fragment() {
             Observer { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() })
 
         binding.list.adapter =
-            adapter.withLoadStateHeaderAndFooter(header = PostLoadingStateAdapter {
+            adapter.withLoadStateHeaderAndFooter(header = WallLoadingStateAdapter {
                 adapter.retry()
-            }, footer = PostLoadingStateAdapter { adapter.retry() })
+            }, footer = WallLoadingStateAdapter { adapter.retry() })
 
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading

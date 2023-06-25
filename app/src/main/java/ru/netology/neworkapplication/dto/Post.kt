@@ -19,7 +19,8 @@ data class Post(
     val attachment: Attachment? = null,
     val ownedByMe: Boolean = false,
     val mentionedMe: Boolean = false,
-) : FeedItem
+
+    ) : FeedItem
 
 
 data class Attachment(

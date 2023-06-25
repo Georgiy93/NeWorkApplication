@@ -15,14 +15,12 @@ interface ApiService {
         @Part("login") login: RequestBody,
         @Part("password") password: RequestBody,
         @Part("name") name: RequestBody,
-        @Part("avatar") avatarUrl: RequestBody,
+        @Part avatarUrl: MultipartBody.Part?,
     ): Response<RegistrationResponse>
 
     @POST("/api/users/authentication/")
-    @Multipart
     suspend fun login(
-        @Part("login") login: RequestBody,
-        @Part("password") password: RequestBody
+        @Body request: RequestLogin
     ): Response<LoginResponse>
 
 
@@ -33,29 +31,125 @@ interface ApiService {
         @Body post: Post
     ): Response<Post>
 
-    @POST("/api/my/job")
-
-    suspend fun saveJob(
+    @GET("/api/posts/latest")
+    suspend fun getLatest(
         @Header("Authorization") authHeader: String,
-        @Body job: Job
+        @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @GET("/api/posts/{id}/")
+    suspend fun getPost(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Int
+    ): Response<Post>
+
+    @GET("/api/posts/{id}/before")
+    suspend fun getBefore(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Long,
+        @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @GET("/api/posts")
+    suspend fun getAll(
+        @Header("Authorization") authHeader: String
+    ): Response<List<Post>>
+
+    @GET("/api/posts/{id}/newer")
+    suspend fun getNewer(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Long
+    ): Response<List<Post>>
+
+    @DELETE("/api/posts/{id}")
+    suspend fun removeById(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: String
+    ): Response<Unit>
+
+    @POST("/api/posts/{id}/likes/")
+    suspend fun likeById(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: String
+    ): Response<Post>
+
+    @DELETE("/api/posts/{id}/likes")
+    suspend fun dislikeById(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: String
+    ): Response<Post>
+
+
+    @GET("/api/posts/{id}/after")
+    suspend fun getAfter(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Long, @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @Multipart
+    @POST("/api/media")
+    suspend fun upload(
+        @Header("Authorization") authHeader: String,
+        @Part media: MultipartBody.Part
+    ): Response<Media>
+
+
+    @POST("/api/my/jobs")
+    suspend fun saveJob(
+        @Header("Authorization") token: String,
+        @Body job: Job,
     ): Response<Job>
 
-    @GET("/api/my/job/{id}/")
+    @GET("/api/{id}/jobs")
     suspend fun getJob(
-        @Header("Authorization") authHeader: String,
+
         @Path("id") id: Int
     ): Response<Job>
 
-    @DELETE("/api/my/job/{id}/")
+    @DELETE("/api/my/jobs/{id}")
     suspend fun removeJobById(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: String
+
+        @Path("id") id: Int,
+        @Header("Authorization") token: String,
     ): Response<Job>
 
     @GET("/api/my/jobs")
     suspend fun getJobAll(
-        @Header("Authorization") authHeader: String
+        @Header("Authorization") token: String
     ): Response<List<Job>>
+
+
+    @GET("/api/my/wall/latest/")
+    suspend fun getWallLatest(
+        @Header("Authorization") authHeader: String,
+        @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @GET("/api/my/wall/{id}/after")
+    suspend fun getWallAfter(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Long,
+        @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @GET("/api/my/wall/{id}/before")
+    suspend fun getWallBefore(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Long,
+        @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @GET("/api/my/wall/")
+    suspend fun getWallAll(
+        @Header("Authorization") authHeader: String
+    ): Response<List<Post>>
+
+    @GET("/api/my/wall/{id}/newer")
+    suspend fun getWallNewer(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Long
+    ): Response<List<Post>>
+
 
     @POST("/api/events/")
 
@@ -63,16 +157,6 @@ interface ApiService {
         @Header("Authorization") authHeader: String,
         @Body post: Post
     ): Response<Post>
-
-
-    @GET("/api/posts/latest")
-    suspend fun getLatest(@Query("count") count: Int): Response<List<Post>>
-
-    @GET("/api/my/wall/latest/")
-    suspend fun getWallLatest(
-        @Header("Authorization") authHeader: String,
-        @Query("count") count: Int
-    ): Response<List<Post>>
 
     @GET("/api/events/latest/")
     suspend fun getEventLatest(
@@ -87,12 +171,6 @@ interface ApiService {
         @Query("count") count: Int
     ): Response<List<Post>>
 
-    @GET("/api/my/wall/{id}/after")
-    suspend fun getWallAfter(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: Long,
-        @Query("count") count: Int
-    ): Response<List<Post>>
 
     @GET("/api/events/{id}/before")
     suspend fun getEventBefore(
@@ -101,28 +179,12 @@ interface ApiService {
         @Query("count") count: Int
     ): Response<List<Post>>
 
-    @GET("/api/my/wall/{id}/before")
-    suspend fun getWallBefore(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: Long,
-        @Query("count") count: Int
-    ): Response<List<Post>>
-
-    @GET("/api/events/")
-    suspend fun getWallAll(
-        @Header("Authorization") authHeader: String
-    ): Response<List<Post>>
 
     @GET("/api/events/")
     suspend fun getEventsAll(
         @Header("Authorization") authHeader: String
     ): Response<List<Post>>
 
-    @GET("/api/posts/{id}/")
-    suspend fun getPost(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: Int
-    ): Response<Post>
 
     @GET("/api/events/{id}/")
     suspend fun getEvent(
@@ -130,17 +192,6 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<Post>
 
-    @GET("/api/posts/{id}/before")
-    suspend fun getBefore(
-        @Path("id") id: Long,
-        @Query("count") count: Int
-    ): Response<List<Post>>
-
-    @GET("/api/my/wall/{id}/newer")
-    suspend fun getWallNewer(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: Long
-    ): Response<List<Post>>
 
     @GET("/api/events/{id}/newer/")
     suspend fun getEventNewer(
@@ -148,19 +199,7 @@ interface ApiService {
         @Path("id") id: Long
     ): Response<List<Post>>
 
-    @GET("/api/posts")
-    suspend fun getAll(
-        @Header("Authorization") authHeader: String
-    ): Response<List<Post>>
 
-    @GET("/api/posts/{id}/newer")
-    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
-
-    @DELETE("/api/posts/{id}")
-    suspend fun removeById(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: String
-    ): Response<Unit>
 
     @DELETE("/api/events/{id}")
     suspend fun removeEventById(
@@ -180,23 +219,5 @@ interface ApiService {
         @Path("id") id: String
     ): Response<Post>
 
-    @POST("/api/posts/{id}/likes/")
-    suspend fun likeById(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: String
-    ): Response<Post>
 
-    @DELETE("/api/posts/{id}/likes")
-    suspend fun dislikeById(
-        @Header("Authorization") authHeader: String,
-        @Path("id") id: String
-    ): Response<Post>
-
-
-    @GET("/api/posts/{id}/after")
-    suspend fun getAfter(@Path("id") id: Long, @Query("count") count: Int): Response<List<Post>>
-
-    @Multipart
-    @POST("media")
-    suspend fun upload(@Part media: MultipartBody.Part): Response<Media>
 }

@@ -18,10 +18,7 @@ import ru.netology.neworkapplication.view.loadCircleCrop
 import java.text.SimpleDateFormat
 import java.util.*
 
-interface OnInteractionListener {
 
-
-}
 
 class WallAdapter(
 
@@ -98,6 +95,7 @@ class WallViewHolder(
                 like.isClickable = false
                 like.isEnabled = false
                 if (post.attachment == null) {
+                    Glide.with(itemView.context).clear(image) // Clear any pending loads
                     image.visibility = View.GONE
                 } else {
                     post.attachment?.url?.let {
@@ -105,11 +103,13 @@ class WallViewHolder(
                             .load(it)
                             .into(image)
                     }
+                    image.visibility = View.VISIBLE
                 }
                 menu.visibility = View.GONE
 
 
             }
         }
+
     }
 }

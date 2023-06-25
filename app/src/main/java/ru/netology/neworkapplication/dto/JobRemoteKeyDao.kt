@@ -18,10 +18,10 @@ interface JobRemoteKeyDao {
     suspend fun min(): Long?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(PostRemoteKeyEntity: JobRemoteKeyEntity)
+    suspend fun insert(JobRemoteKeyEntity: JobRemoteKeyEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(PostRemoteKeyEntity: List<JobRemoteKeyEntity>)
+    suspend fun insert(JobRemoteKeyEntity: List<JobRemoteKeyEntity>)
 
     @Query("DELETE FROM JobRemoteKeyEntity")
     suspend fun clear()

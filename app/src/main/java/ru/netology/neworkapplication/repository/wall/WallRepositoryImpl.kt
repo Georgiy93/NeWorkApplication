@@ -38,7 +38,7 @@ class WallRepositoryImpl @Inject constructor(
     @OptIn(ExperimentalPagingApi::class)
     override val data: Flow<PagingData<FeedItem>> =
         Pager(
-            config = PagingConfig(pageSize = 3, enablePlaceholders = false),
+            config = PagingConfig(pageSize = 4, enablePlaceholders = false),
             pagingSourceFactory = { postDao.getPagingSource() },
             remoteMediator = WallRemoteMediator(
                 service = apiService,
@@ -64,12 +64,12 @@ class WallRepositoryImpl @Inject constructor(
                 throw ApiError(response.code(), response.message())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            body.filter { post ->
-                post.content != "" && post.content.isNotBlank()
-            }
+            val body = response.body()?.filter { post ->
+                post.content.isNotEmpty() && post.content.isNotBlank()
+            } ?: throw ApiError(response.code(), response.message())
 
             postDao.insert(body.toEntity())
+
 
         } catch (e: IOException) {
             throw NetworkError
@@ -86,12 +86,12 @@ class WallRepositoryImpl @Inject constructor(
                 throw ApiError(response.code(), response.message())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            body.filter { post ->
-                post.content != "" && post.content.isNotBlank()
-            }
+            val body = response.body()?.filter { post ->
+                post.content.isNotEmpty() && post.content.isNotBlank()
+            } ?: throw ApiError(response.code(), response.message())
 
             postDao.insert(body.toEntity())
+
             emit(body.size)
         }
     }
