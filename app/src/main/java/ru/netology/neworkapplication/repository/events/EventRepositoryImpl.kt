@@ -78,6 +78,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
+
     override fun getEventNewer(id: Long): Flow<Int> = flow {
         while (true) {
             delay(120_000L)
@@ -101,7 +102,7 @@ class EventRepositoryImpl @Inject constructor(
             val token = tokenManager.getToken() // Get the token
             val authHeader = token
             val response = apiService.saveEvent(authHeader, event)
-            Log.d("EventRepository", "Response: ${response.code()} - ${response.message()}")
+            Log.d("saveEvent", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -128,7 +129,7 @@ class EventRepositoryImpl @Inject constructor(
                 event.copy(attachment = Attachment(media.url, AttachmentType.IMAGE))
 
             val response = apiService.saveEvent(authHeader, eventWithAttachment ?: event)
-            Log.d("EventRepository", "Response: ${response.code()} - ${response.message()}")
+            Log.d("saveEventWithAttachment", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -195,25 +196,25 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-//    override suspend fun addParticipants(id: Int):Event {
-//        try {
-//            val token = tokenManager.getToken() // Get the token
-//            val authHeader = token
-//            val response = apiService.addParticipants(authHeader, id)
-//            Log.d("EventRepository", "Response: ${response.code()} - ${response.message()}")
-//            if (!response.isSuccessful) {
-//                throw ApiError(response.code(), response.message())
-//            }
-//
-//            val body = response.body() ?: throw ApiError(response.code(), response.message())
-//            eventDao.insert(EventEntity.fromDto(body))
-//        } catch (e: IOException) {
-//            throw NetworkError
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            throw UnknownError
-//        }
-//    }
+    override suspend fun addParticipants(id: Int): Event {
+        try {
+            val token = tokenManager.getToken() // Get the token
+            val authHeader = token
+            val response = apiService.addParticipants(authHeader, id)
+            Log.d("EventRepository", "Response: ${response.code()} - ${response.message()}")
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            return response.body() ?: throw ApiError(response.code(), response.message())
+
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw UnknownError
+        }
+    }
 
 
     private suspend fun upload(media: MediaModel): Media {

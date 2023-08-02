@@ -8,7 +8,9 @@ import ru.netology.neworkapplication.dto.Attachment
 class ListConverter {
     @TypeConverter
     fun fromString(value: String): List<Int> {
-        return value.split(",").map { it.toInt() }
+        return value.split(",").mapNotNull {
+            it.toIntOrNull()
+        }
     }
 
     @TypeConverter

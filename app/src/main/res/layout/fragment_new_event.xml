@@ -10,14 +10,21 @@
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:padding="0dp"
         app:layout_constraintBottom_toTopOf="@id/divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
             android:orientation="vertical">
 
 
@@ -28,27 +35,16 @@
                 android:layout_marginTop="@dimen/common_spacing"
                 android:layout_marginStart="@dimen/common_spacing"
                 android:layout_marginEnd="@dimen/common_spacing"
+                android:hint="Date Time" />
 
-
-                tools:text="Date Time" />
-
-            <EditText
+            <TextView
                 android:id="@+id/type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/common_spacing"
                 android:layout_marginStart="@dimen/common_spacing"
                 android:layout_marginEnd="@dimen/common_spacing"
-
-
-                tools:text="Type" />
-
-            <androidx.constraintlayout.widget.Barrier
-                android:id="@+id/header"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:barrierDirection="bottom"
-                app:constraint_referenced_ids="avatar,published,menu" />
+                android:hint="Type" />
 
             <EditText
                 android:id="@+id/edit"
@@ -63,16 +59,12 @@
             <EditText
                 android:id="@+id/link"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:autoLink="web"
                 android:lineSpacingMultiplier="1.5"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-
-                app:layout_constraintBottom_toBottomOf="@+id/footer"
-                tools:text="http://netolo.gy/fyb" />
+                android:hint="link" />
 
             <FrameLayout
                 android:id="@+id/photoContainer"
@@ -85,33 +77,48 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:contentDescription="@string/description_photo" />
-
-                <androidx.constraintlayout.widget.Barrier
-                    android:id="@+id/footer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:barrierDirection="bottom"
-                    app:constraint_referenced_ids="content" />
             </FrameLayout>
-
 
             <TextView
                 android:id="@+id/participantsTitle"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Участники"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:padding="@dimen/common_spacing" />
+                android:layout_marginTop="16dp" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/participantsList"
+                android:id="@+id/participantsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" />
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp" />
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter participant"
+                android:layout_marginTop="8dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/participantEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/addParticipantButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="0dp"
+                android:text="Add" />
 
         </LinearLayout>
+
     </ScrollView>
 
     <View
@@ -148,10 +155,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|bottom"
-            android:text="@string/remove"
-            app:layout_constraintStart_toEndOf="@+id/photo" />
+            android:text="@string/remove" />
 
     </LinearLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,8 @@
 package ru.netology.neworkapplication.dto
 
+enum class EventType {
+    OFFLINE, ONLINE
+}
 
 sealed interface FeedItemEvent {
     val id: Int
@@ -11,19 +14,19 @@ data class Event(
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,
-    val content: String = "empty",
+    val content: String,
     val datetime: String,
     val published: String,
 
     val type: String,
-    val likeOwnerIds: List<Int> = emptyList(),
+    val likeOwnerIds: List<Int>? = emptyList(),
     val likedByMe: Boolean,
-    val speakerIds: List<Int>? = null,
-    val participantsIds: List<Int> = emptyList(),
+    val speakerIds: List<Int>? = emptyList(),
+    val participantsIds: List<Int>? = emptyList(),
     val participatedByMe: Boolean,
     val attachment: Attachment? = null,
     val link: String?,
     val ownedByMe: Boolean = false,
-    val users: Users? = null
+    val users: Map<Long, UserPreview> = emptyMap()
 ) : FeedItemEvent
 

@@ -18,7 +18,7 @@ import okhttp3.MultipartBody
 import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dto.FeedItem
 import ru.netology.neworkapplication.dto.Post
-import ru.netology.neworkapplication.dto.Users
+
 import ru.netology.neworkapplication.model.FeedModelState
 import ru.netology.neworkapplication.model.MediaModel
 import ru.netology.neworkapplication.repository.PostRepository

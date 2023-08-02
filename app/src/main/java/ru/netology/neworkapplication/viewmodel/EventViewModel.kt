@@ -33,11 +33,13 @@ private val empty = Event(
     authorAvatar = "",
     authorJob = "",
     likedByMe = false,
-    participatedByMe = false,
     published = "",
     datetime = "",
     link = "",
-    type = "OFFLINE"
+    type = "OFFLINE",
+    participatedByMe = true
+
+
 )
 
 
@@ -138,7 +140,7 @@ class EventViewModel @Inject constructor(
                 if (event != null) {
                     edited.value = event
                 } else {
-                    _messageError.value = "Post not found"
+                    _messageError.value = "Event not found"
                 }
             } catch (e: Exception) {
                 _messageError.value = e.message
@@ -164,7 +166,7 @@ class EventViewModel @Inject constructor(
 
     fun changeType(type: String) {
         val text = type.trim()
-        if (edited.value?.datetime == text) {
+        if (edited.value?.type == text) {
             return
         }
         edited.value = edited.value?.copy(type = text)

@@ -14,28 +14,30 @@ data class EventEntity(
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,
-    val content: String = "empty",
+    val content: String,
     val datetime: String,
     val published: String,
 
     val type: String,
 
 
-    val likeOwnerIds: List<Int> = emptyList(),
+    val likeOwnerIds: List<Int>? = emptyList(),
     val likedByMe: Boolean,
 
 
-    val speakerIds: List<Int>? = null,
+    val speakerIds: List<Int>? = emptyList(),
 
 
-    val participantsIds: List<Int> = emptyList(),
+    val participantsIds: List<Int>? = emptyList(),
+
     val participatedByMe: Boolean,
 
     val link: String?,
     val ownedByMe: Boolean,
+    val users: Map<Long, UserPreview> = emptyMap(),
 
-    @Embedded
-    var users: Users?,
+//    @Embedded
+//    var users: UserPreview?,
     @Embedded(prefix = "attachment_")
     var attachment: Attachment?,
 

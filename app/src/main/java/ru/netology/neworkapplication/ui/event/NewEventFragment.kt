@@ -1,9 +1,13 @@
 package ru.netology.neworkapplication.ui.event
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.*
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
 import androidx.core.view.MenuProvider
@@ -17,13 +21,11 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewEventBinding
-import ru.netology.neworkapplication.databinding.FragmentNewJobBinding
-import ru.netology.neworkapplication.ui.FeedFragment
+import ru.netology.neworkapplication.dto.EventType
 import ru.netology.neworkapplication.ui.job.JobFragment
 import ru.netology.neworkapplication.util.AndroidUtils
 import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.EventViewModel
-import ru.netology.neworkapplication.viewmodel.JobViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,7 +40,7 @@ class NewEventFragment : Fragment() {
     private val viewModel: EventViewModel by activityViewModels()
 
     private var fragmentBinding: FragmentNewEventBinding? = null
-
+    private val participantsList = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +58,24 @@ class NewEventFragment : Fragment() {
             binding.datetime.setText(textArg)
             binding.link.setText(textArg)
             binding.edit.setText(textArg)
-            binding.type.setText(textArg)
+
+        }
+        fragmentBinding?.type?.setOnClickListener { view ->
+            // list of event types
+            val eventTypes = arrayOf(EventType.OFFLINE, EventType.ONLINE)
+            val eventTypeNames = eventTypes.map { it.toString() }.toTypedArray()
+            // create a dialog
+            AlertDialog.Builder(requireContext())
+                .setTitle("Event Type")
+                .setSingleChoiceItems(eventTypeNames, -1) { dialog, which ->
+                    val eventType = eventTypes[which]
+                    fragmentBinding?.type?.setText(eventType.toString())
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.cancel()
+                }
+                .show()
         }
         binding.clear.visibility = View.GONE
         val photoLauncher =
@@ -136,6 +155,23 @@ class NewEventFragment : Fragment() {
                     calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)
                 ).show()
+            }
+        }
+        val participantsAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, participantsList)
+        fragmentBinding?.participantsRecyclerView?.let {
+            it.visibility = View.GONE // Hide RecyclerView as we will use ListView
+        }
+        val listView = ListView(requireContext())
+        listView.adapter = participantsAdapter
+        (fragmentBinding?.scrollView?.getChildAt(0) as LinearLayout).addView(listView)
+
+        fragmentBinding?.addParticipantButton?.setOnClickListener {
+            val participantName = fragmentBinding?.participantEditText?.text.toString().trim()
+            if (participantName.isNotEmpty()) {
+                participantsList.add(participantName)
+                participantsAdapter.notifyDataSetChanged()
+                fragmentBinding?.participantEditText?.text?.clear()
             }
         }
 

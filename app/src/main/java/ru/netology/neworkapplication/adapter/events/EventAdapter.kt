@@ -59,7 +59,6 @@ class EventsAdapter(
 
     }
 }
-
 //
 class EventsDiffCallback : DiffUtil.ItemCallback<FeedItemEvent>() {
     override fun areItemsTheSame(oldItem: FeedItemEvent, newItem: FeedItemEvent): Boolean {
@@ -88,12 +87,15 @@ class EventsViewHolder(
             val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.US)
             originalFormat.timeZone = TimeZone.getTimeZone("UTC") // if the original time is in UTC
             val date = originalFormat.parse(event.published)
-            val dateEvent = originalFormat.parse(event.datetime)
+
             published.text = if (date != null) targetFormat.format(date) else "Unknown date"
 //
-            datetime.text = if (date != null) targetFormat.format(dateEvent) else "Unknown date"
-            authorJob.text = event.authorJob
+            datetime.text = event.datetime
+            //authorJob.text = event.authorJob
             content.text = event.content
+            type.text = event.type
+            link.text = event.link
+
             avatar.loadCircleCrop("${event.authorAvatar}")
             like.isChecked = event.likedByMe
 

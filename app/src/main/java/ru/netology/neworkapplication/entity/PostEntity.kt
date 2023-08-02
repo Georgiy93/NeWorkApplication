@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey
 import ru.netology.neworkapplication.dto.Attachment
 
 import ru.netology.neworkapplication.dto.Post
-import ru.netology.neworkapplication.dto.Users
 
 
 @Entity
