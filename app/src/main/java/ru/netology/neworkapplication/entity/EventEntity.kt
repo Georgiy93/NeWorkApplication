@@ -14,7 +14,7 @@ data class EventEntity(
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,
-    val content: String,
+    val content: String = "empty",
     val datetime: String,
     val published: String,
 
@@ -25,7 +25,7 @@ data class EventEntity(
     val likedByMe: Boolean,
 
 
-    val speakerIds: List<Int> = emptyList(),
+    val speakerIds: List<Int>? = null,
 
 
     val participantsIds: List<Int> = emptyList(),
@@ -33,6 +33,9 @@ data class EventEntity(
 
     val link: String?,
     val ownedByMe: Boolean,
+
+    @Embedded
+    var users: Users?,
     @Embedded(prefix = "attachment_")
     var attachment: Attachment?,
 
@@ -56,8 +59,8 @@ data class EventEntity(
         attachment,
         link,
         ownedByMe,
-
-        )
+        users
+    )
 
     companion object {
         fun fromDto(dto: Event) =
@@ -79,6 +82,7 @@ data class EventEntity(
 
                 dto.link,
                 dto.ownedByMe,
+                dto.users,
                 dto.attachment,
 
                 )
