@@ -14,20 +14,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import okhttp3.MultipartBody
 import ru.netology.neworkapplication.auth.AppAuth
-import ru.netology.neworkapplication.dto.FeedItem
+import ru.netology.neworkapplication.dto.Event
+import ru.netology.neworkapplication.dto.FeedItemEvent
 import ru.netology.neworkapplication.dto.Post
-import ru.netology.neworkapplication.dto.Users
 import ru.netology.neworkapplication.model.FeedModelState
 import ru.netology.neworkapplication.model.MediaModel
-import ru.netology.neworkapplication.repository.PostRepository
+import ru.netology.neworkapplication.repository.events.EventRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
 import java.io.File
-
 import javax.inject.Inject
 
-private val empty = Post(
+private val empty = Event(
     id = 0,
     content = "",
     authorId = 0,
@@ -35,17 +33,18 @@ private val empty = Post(
     authorAvatar = "",
     authorJob = "",
     likedByMe = false,
-
+    participatedByMe = false,
     published = "",
-
-    )
-
+    datetime = "",
+    link = "",
+    type = "OFFLINE"
+)
 
 
 @HiltViewModel
 @ExperimentalCoroutinesApi
-class PostViewModel @Inject constructor(
-    private val repository: PostRepository,
+class EventViewModel @Inject constructor(
+    private val repository: EventRepository,
     auth: AppAuth,
 ) : ViewModel() {
     private val cached = repository.data.cachedIn(viewModelScope)
@@ -57,14 +56,14 @@ class PostViewModel @Inject constructor(
         get() = _messageError
     private val editedContent = MutableLiveData("")
 
-    val data: Flow<PagingData<FeedItem>> = auth.authStateFlow
+    val data: Flow<PagingData<FeedItemEvent>> = auth.authStateFlow
         .flatMapLatest { (myId, _) ->
             cached.map { pagingData ->
-                pagingData.map { post ->
-                    if (post is Post) {
-                        post.copy(ownedByMe = post.authorId == myId)
+                pagingData.map { event ->
+                    if (event is Event) {
+                        event.copy(ownedByMe = event.authorId == myId)
                     } else {
-                        post
+                        event
                     }
                 }
             }
@@ -75,26 +74,26 @@ class PostViewModel @Inject constructor(
         get() = _dataState
 
     private val edited = MutableLiveData(empty)
-    val editedPost: LiveData<Post>
+    val editedEvent: LiveData<Event>
         get() = edited
-    private val _postCreated = SingleLiveEvent<Unit>()
+    private val _eventCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
-        get() = _postCreated
+        get() = _eventCreated
     private val _media = MutableLiveData<MediaModel?>(null)
     val media: LiveData<MediaModel?>
         get() = _media
 
 
     init {
-        loadPosts()
+        loadEvents()
 
     }
 
-    fun loadPosts() = viewModelScope.launch {
+    fun loadEvents() = viewModelScope.launch {
         try {
 
             _dataState.value = FeedModelState(loading = true)
-            repository.getAll()
+            repository.getEventsAll()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
         }
@@ -109,18 +108,18 @@ class PostViewModel @Inject constructor(
         _media.value = null
     }
 
-    fun save() {
+    fun saveEvent() {
         edited.value?.let {
             viewModelScope.launch {
                 try {
                     when (val media = media.value) {
-                        null -> repository.save(it)
+                        null -> repository.saveEvent(it)
                         else -> {
-                            repository.saveWithAttachment(it, media)
+                            repository.saveEventWithAttachment(it, media)
                         }
                     }
 
-                    _postCreated.value = Unit
+                    _eventCreated.value = Unit
                     _dataState.value = FeedModelState()
                 } catch (e: Exception) {
                     _dataState.value = FeedModelState(error = true)
@@ -132,12 +131,12 @@ class PostViewModel @Inject constructor(
     }
 
 
-    fun edit(postId: Int) {
+    fun editEvent(eventId: Int) {
         viewModelScope.launch {
             try {
-                val post = repository.getPost(postId)  // Get post by id from repository
-                if (post != null) {
-                    edited.value = post
+                val event = repository.getEvent(eventId)  // Get post by id from repository
+                if (event != null) {
+                    edited.value = event
                 } else {
                     _messageError.value = "Post not found"
                 }
@@ -155,12 +154,35 @@ class PostViewModel @Inject constructor(
         edited.value = edited.value?.copy(content = text)
     }
 
+    fun changeDatetime(datetime: String) {
+        val text = datetime.trim()
+        if (edited.value?.datetime == text) {
+            return
+        }
+        edited.value = edited.value?.copy(datetime = text)
+    }
 
-    fun likeById(post: Post) {
+    fun changeType(type: String) {
+        val text = type.trim()
+        if (edited.value?.datetime == text) {
+            return
+        }
+        edited.value = edited.value?.copy(type = text)
+    }
+
+    fun changeLink(link: String) {
+        val text = link.trim()
+        if (edited.value?.link == text) {
+            return
+        }
+        edited.value = edited.value?.copy(link = text)
+    }
+
+    fun likeEventById(event: Event) {
 
         viewModelScope.launch {
             try {
-                repository.likeById(post)
+                repository.likeEventById(event)
 
                 _dataState.value = FeedModelState()
 
@@ -173,10 +195,10 @@ class PostViewModel @Inject constructor(
 
     }
 
-    fun removeById(id: Int) {
+    fun removeEventById(id: Int) {
         viewModelScope.launch {
             try {
-                repository.removeById(id)
+                repository.removeEventById(id)
 
             } catch (e: Exception) {
 

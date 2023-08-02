@@ -155,21 +155,21 @@ interface ApiService {
 
     suspend fun saveEvent(
         @Header("Authorization") authHeader: String,
-        @Body post: Post
-    ): Response<Post>
+        @Body event: Event
+    ): Response<Event>
 
     @GET("/api/events/latest/")
     suspend fun getEventLatest(
         @Header("Authorization") authHeader: String,
         @Query("count") count: Int
-    ): Response<List<Post>>
+    ): Response<List<Event>>
 
     @GET("/api/events/{id}/after/")
     suspend fun getEvenAfter(
         @Header("Authorization") authHeader: String,
         @Path("id") id: Long,
         @Query("count") count: Int
-    ): Response<List<Post>>
+    ): Response<List<Event>>
 
 
     @GET("/api/events/{id}/before")
@@ -177,28 +177,27 @@ interface ApiService {
         @Header("Authorization") authHeader: String,
         @Path("id") id: Long,
         @Query("count") count: Int
-    ): Response<List<Post>>
+    ): Response<List<Event>>
 
 
     @GET("/api/events/")
     suspend fun getEventsAll(
         @Header("Authorization") authHeader: String
-    ): Response<List<Post>>
+    ): Response<List<Event>>
 
 
     @GET("/api/events/{id}/")
     suspend fun getEvent(
         @Header("Authorization") authHeader: String,
         @Path("id") id: Int
-    ): Response<Post>
+    ): Response<Event>
 
 
     @GET("/api/events/{id}/newer/")
     suspend fun getEventNewer(
         @Header("Authorization") authHeader: String,
         @Path("id") id: Long
-    ): Response<List<Post>>
-
+    ): Response<List<Event>>
 
 
     @DELETE("/api/events/{id}")
@@ -211,13 +210,19 @@ interface ApiService {
     suspend fun likeEventById(
         @Header("Authorization") authHeader: String,
         @Path("id") id: String
-    ): Response<Post>
+    ): Response<Event>
+
+    @POST("/api/events/{id}/participants/")
+    suspend fun addParticipants(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Int
+    ): Response<Event>
 
     @DELETE("/api/events/{id}/likes")
     suspend fun dislikeEventById(
         @Header("Authorization") authHeader: String,
         @Path("id") id: String
-    ): Response<Post>
+    ): Response<Event>
 
 
 }

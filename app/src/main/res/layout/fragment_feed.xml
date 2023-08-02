@@ -41,8 +41,11 @@
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/card_post" />
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                tools:listitem="@layout/card_post"
+                tools:listitem2="@layout/card_event" />
+
+
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -51,12 +54,25 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
         android:contentDescription="@string/add_post"
         android:focusable="true"
-        android:layout_gravity="bottom|end"
         app:srcCompat="@drawable/ic_add_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabEvent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="80dp"
+        android:layout_marginBottom="16dp"
+
+        android:clickable="true"
+        android:contentDescription="@string/add_event"
+        android:focusable="true"
+        app:srcCompat="@drawable/event_24dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
