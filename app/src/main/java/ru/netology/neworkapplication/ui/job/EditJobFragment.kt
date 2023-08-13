@@ -70,7 +70,7 @@ class EditJobFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.edit(jobId)  // Load the post you want to edit when the fragment is created
+        viewModel.edit(jobId)
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

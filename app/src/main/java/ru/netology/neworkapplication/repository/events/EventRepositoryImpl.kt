@@ -187,11 +187,34 @@ class EventRepositoryImpl @Inject constructor(
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
+
             return body
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
             e.printStackTrace()
+            throw UnknownError
+        }
+    }
+
+    override suspend fun userAll(): List<LoginRequest> {
+        try {
+
+
+            val response = apiService.userAll()
+            Log.d("apiService.getEventsAll", "Response: ${response.code()} - ${response.message()}")
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+
+
+            return body
+
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
             throw UnknownError
         }
     }
@@ -206,8 +229,10 @@ class EventRepositoryImpl @Inject constructor(
                 throw ApiError(response.code(), response.message())
             }
 
-            return response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
 
+            eventDao.insert(EventEntity.fromDto(body))
+            return body
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -216,6 +241,25 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun removeParticipantById(id: Int): Event {
+        try {
+            val token = tokenManager.getToken() // Get the token
+            val authHeader = token
+            val response = apiService.removeParticipantById(authHeader, id)
+            Log.d("EventRepository", "Response: ${response.code()} - ${response.message()}")
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            eventDao.insert(EventEntity.fromDto(body))
+            return body
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw UnknownError
+        }
+    }
 
     private suspend fun upload(media: MediaModel): Media {
         try {

@@ -23,6 +23,8 @@ interface ApiService {
         @Body request: RequestLogin
     ): Response<LoginResponse>
 
+    @GET("/api/users/")
+    suspend fun userAll(): Response<List<LoginRequest>>
 
     @POST("/api/posts")
 
@@ -214,6 +216,12 @@ interface ApiService {
 
     @POST("/api/events/{id}/participants/")
     suspend fun addParticipants(
+        @Header("Authorization") authHeader: String,
+        @Path("id") id: Int
+    ): Response<Event>
+
+    @DELETE("/api/events/{id}/participants/")
+    suspend fun removeParticipantById(
         @Header("Authorization") authHeader: String,
         @Path("id") id: Int
     ): Response<Event>

@@ -5,22 +5,19 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.neworkapplication.adapter.OnInteractionListener
-import ru.netology.neworkapplication.adapter.events.OnInteractionListener2
+import ru.netology.neworkapplication.adapter.events.OnInteractionListenerEvent
 import ru.netology.neworkapplication.adapter.PostsAdapter
 import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.R
@@ -31,7 +28,6 @@ import ru.netology.neworkapplication.adapter.events.EventsAdapter
 import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.FragmentFeedBinding
 import ru.netology.neworkapplication.dto.Event
-import ru.netology.neworkapplication.dto.Job
 import ru.netology.neworkapplication.ui.event.EditEventFragment
 import ru.netology.neworkapplication.ui.event.NewEventFragment
 import ru.netology.neworkapplication.ui.job.JobFragment
@@ -93,7 +89,7 @@ class FeedFragment : Fragment() {
             }
 
         }, tokenManager)
-        eventAdapter = EventsAdapter(object : OnInteractionListener2 {
+        eventAdapter = EventsAdapter(object : OnInteractionListenerEvent {
 
             override fun onEdit(event: Event) {
                 eventViewModel.editEvent(event.id)
@@ -120,17 +116,19 @@ class FeedFragment : Fragment() {
                 }
             }
 
+
         }, tokenManager)
         val adapter = ConcatAdapter(
+            eventAdapter.withLoadStateHeaderAndFooter(
+                header = EventLoadingStateAdapter { eventAdapter.retry() },
+                footer = EventLoadingStateAdapter { eventAdapter.retry() }
+            ),
             postAdapter.withLoadStateHeaderAndFooter(
                 header = PostLoadingStateAdapter { postAdapter.retry() },
                 footer = PostLoadingStateAdapter { postAdapter.retry() }
             ),
-            eventAdapter.withLoadStateHeaderAndFooter(
-                header = EventLoadingStateAdapter { eventAdapter.retry() },
-                footer = EventLoadingStateAdapter { eventAdapter.retry() }
+
             )
-        )
         binding.list.adapter = adapter
         postViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
@@ -178,7 +176,19 @@ class FeedFragment : Fragment() {
             postAdapter.refresh()
             eventAdapter.refresh()
         }
+        lifecycleScope.launchWhenCreated {
+            postViewModel.data.collectLatest { pagingData ->
+                postAdapter.submitData(pagingData)
+                binding.swiperefresh.isRefreshing = false
+            }
+        }
 
+        lifecycleScope.launchWhenCreated {
+            eventViewModel.data.collectLatest { pagingData ->
+                eventAdapter.submitData(pagingData)
+                binding.swiperefresh.isRefreshing = false
+            }
+        }
         binding.fab.setOnClickListener {
             parentFragmentManager.commit {
                 replace(R.id.container, NewPostFragment())

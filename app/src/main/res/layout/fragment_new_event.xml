@@ -35,7 +35,7 @@
                 android:layout_marginTop="@dimen/common_spacing"
                 android:layout_marginStart="@dimen/common_spacing"
                 android:layout_marginEnd="@dimen/common_spacing"
-                android:hint="Date Time" />
+                android:hint="Enter the date of the event" />
 
             <TextView
                 android:id="@+id/type"
@@ -44,7 +44,7 @@
                 android:layout_marginTop="@dimen/common_spacing"
                 android:layout_marginStart="@dimen/common_spacing"
                 android:layout_marginEnd="@dimen/common_spacing"
-                android:hint="Type" />
+                android:hint="Press to select the event format" />
 
             <EditText
                 android:id="@+id/edit"
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/common_spacing"
                 android:background="@android:color/transparent"
-                android:hint="Content"
+                android:hint="Enter the сontent"
                 android:inputType="textMultiLine"
                 android:padding="@dimen/common_spacing" />
 
@@ -62,6 +62,7 @@
                 android:layout_height="wrap_content"
                 android:autoLink="web"
                 android:lineSpacingMultiplier="1.5"
+                android:padding="@dimen/common_spacing"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
                 android:hint="link" />
@@ -86,20 +87,23 @@
                 android:text="Участники"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="16dp"
+                android:padding="@dimen/common_spacing" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/participantsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
                 android:layout_marginBottom="16dp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter participant"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:padding="@dimen/common_spacing">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/participantEditText"
@@ -114,8 +118,9 @@
                 android:id="@+id/addParticipantButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="0dp"
-                android:text="Add" />
+                android:layout_marginBottom="8dp"
+                android:text="Add"
+                android:layout_marginStart="8dp" />
 
         </LinearLayout>
 

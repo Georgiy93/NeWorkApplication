@@ -1,6 +1,7 @@
 package ru.netology.neworkapplication.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,10 +19,13 @@ import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.dto.FeedItemEvent
 import ru.netology.neworkapplication.dto.Post
+import ru.netology.neworkapplication.dto.UserPreview
 import ru.netology.neworkapplication.model.FeedModelState
 import ru.netology.neworkapplication.model.MediaModel
 import ru.netology.neworkapplication.repository.events.EventRepository
+import ru.netology.neworkapplication.repository.job.JobRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
+import ru.netology.neworkapplication.util.TokenManager
 import java.io.File
 import javax.inject.Inject
 
@@ -35,7 +39,7 @@ private val empty = Event(
     likedByMe = false,
     published = "",
     datetime = "",
-    link = "",
+    link = null,
     type = "OFFLINE",
     participatedByMe = true
 
@@ -47,6 +51,8 @@ private val empty = Event(
 @ExperimentalCoroutinesApi
 class EventViewModel @Inject constructor(
     private val repository: EventRepository,
+    private val repositoryJob: JobRepository,
+    private val tokenManager: TokenManager,
     auth: AppAuth,
 ) : ViewModel() {
     private val cached = repository.data.cachedIn(viewModelScope)
@@ -56,7 +62,7 @@ class EventViewModel @Inject constructor(
     private val _messageError = SingleLiveEvent<String>()
     val messageError: LiveData<String>
         get() = _messageError
-    private val editedContent = MutableLiveData("")
+
 
     val data: Flow<PagingData<FeedItemEvent>> = auth.authStateFlow
         .flatMapLatest { (myId, _) ->
@@ -79,7 +85,7 @@ class EventViewModel @Inject constructor(
     val editedEvent: LiveData<Event>
         get() = edited
     private val _eventCreated = SingleLiveEvent<Unit>()
-    val postCreated: LiveData<Unit>
+    val eventCreated: LiveData<Unit>
         get() = _eventCreated
     private val _media = MutableLiveData<MediaModel?>(null)
     val media: LiveData<MediaModel?>
@@ -114,8 +120,18 @@ class EventViewModel @Inject constructor(
         edited.value?.let {
             viewModelScope.launch {
                 try {
+                    val token = tokenManager.getToken()
+                    val jobs = repositoryJob.getJobAll(token)
+                    val lastJob = jobs.firstOrNull()
+
+                    if (lastJob != null) {
+                        it.copy(authorJob = lastJob.name)
+                    } else {
+                        it.copy(authorJob = "")
+                    }
                     when (val media = media.value) {
                         null -> repository.saveEvent(it)
+
                         else -> {
                             repository.saveEventWithAttachment(it, media)
                         }
@@ -123,6 +139,11 @@ class EventViewModel @Inject constructor(
 
                     _eventCreated.value = Unit
                     _dataState.value = FeedModelState()
+                    Log.d(
+                        "EventViewModel",
+                        "Event saved with content: ${it.content} and link: ${it.link}"
+                    )
+
                 } catch (e: Exception) {
                     _dataState.value = FeedModelState(error = true)
                 }
@@ -172,8 +193,8 @@ class EventViewModel @Inject constructor(
         edited.value = edited.value?.copy(type = text)
     }
 
-    fun changeLink(link: String) {
-        val text = link.trim()
+    fun changeLink(link: String?) {
+        val text = link?.trim()
         if (edited.value?.link == text) {
             return
         }
@@ -209,4 +230,55 @@ class EventViewModel @Inject constructor(
         }
     }
 
+    fun addParticipants(login: String, eventId: Int) {
+        viewModelScope.launch {
+            try {
+                val userList = repository.userAll()
+                val user = userList.find { it.login == login }
+
+                if (user != null) {
+                    val updatedEvent = repository.addParticipants(eventId)
+
+                    val userIdInt = user.id.toInt()
+                    if (updatedEvent.participantsIds?.contains(userIdInt) == false) {
+
+                        val userPreview = UserPreview(user.name, user.avatar)
+                        val updatedUsersMap = updatedEvent.users.toMutableMap()
+                        updatedUsersMap[user.id.toLong()] = userPreview
+
+                        val finalUpdatedEvent = updatedEvent.copy(users = updatedUsersMap)
+
+
+                        repository.saveEvent(finalUpdatedEvent)
+
+                        edited.value = finalUpdatedEvent
+
+                    } else {
+                        _messageError.value = "User is already a participant"
+                    }
+                } else {
+                    _messageError.value = "User not found"
+                }
+            } catch (e: Exception) {
+                _messageError.value = e.message
+            }
+        }
+    }
+
+    fun removeParticipant(name: String, eventId: Int) {
+        viewModelScope.launch {
+            try {
+                val userList = repository.userAll()
+                val userToRemove = userList.find { it.name == name }
+                if (userToRemove != null) {
+                    val updatedEvent = repository.removeParticipantById(eventId)
+                    edited.value = updatedEvent
+                } else {
+                    _messageError.value = "User not found"
+                }
+            } catch (e: Exception) {
+                _messageError.value = e.message
+            }
+        }
+    }
 }

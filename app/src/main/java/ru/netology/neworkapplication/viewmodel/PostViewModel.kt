@@ -22,7 +22,9 @@ import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.model.FeedModelState
 import ru.netology.neworkapplication.model.MediaModel
 import ru.netology.neworkapplication.repository.PostRepository
+import ru.netology.neworkapplication.repository.job.JobRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
+import ru.netology.neworkapplication.util.TokenManager
 import java.io.File
 
 import javax.inject.Inject
@@ -46,6 +48,8 @@ private val empty = Post(
 @ExperimentalCoroutinesApi
 class PostViewModel @Inject constructor(
     private val repository: PostRepository,
+    private val repositoryJob: JobRepository,
+    private val tokenManager: TokenManager,
     auth: AppAuth,
 ) : ViewModel() {
     private val cached = repository.data.cachedIn(viewModelScope)
@@ -113,6 +117,15 @@ class PostViewModel @Inject constructor(
         edited.value?.let {
             viewModelScope.launch {
                 try {
+                    val token = tokenManager.getToken()
+                    val jobs = repositoryJob.getJobAll(token)
+                    val lastJob = jobs.firstOrNull()
+
+                    if (lastJob != null) {
+                        it.copy(authorJob = lastJob.name)
+                    } else {
+                        it.copy(authorJob = "")
+                    }
                     when (val media = media.value) {
                         null -> repository.save(it)
                         else -> {

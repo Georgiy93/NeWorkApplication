@@ -1,22 +1,26 @@
 package ru.netology.neworkapplication.adapter.events
 
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.CardEventBinding
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.dto.FeedItemEvent
 import ru.netology.neworkapplication.util.TokenManager
-import ru.netology.neworkapplication.view.loadCircleCrop
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
-interface OnInteractionListener2 {
+interface OnInteractionListenerEvent {
 
     fun onLike(event: Event) {}
     fun onEdit(event: Event) {}
@@ -26,7 +30,7 @@ interface OnInteractionListener2 {
 }
 
 class EventsAdapter(
-    private val onInteractionListener: OnInteractionListener2,
+    private val onInteractionListener: OnInteractionListenerEvent,
     private val tokenManager: TokenManager
 
 ) : PagingDataAdapter<FeedItemEvent, RecyclerView.ViewHolder>(EventsDiffCallback()) {
@@ -59,7 +63,8 @@ class EventsAdapter(
 
     }
 }
-//
+
+
 class EventsDiffCallback : DiffUtil.ItemCallback<FeedItemEvent>() {
     override fun areItemsTheSame(oldItem: FeedItemEvent, newItem: FeedItemEvent): Boolean {
         if (oldItem::class != newItem::class) {
@@ -74,30 +79,88 @@ class EventsDiffCallback : DiffUtil.ItemCallback<FeedItemEvent>() {
 }
 
 class EventsViewHolder(
+
     private val binding: CardEventBinding,
-    private val onInteractionListener: OnInteractionListener2,
+    private val onInteractionListener: OnInteractionListenerEvent,
     private val tokenManager: TokenManager
 ) : RecyclerView.ViewHolder(binding.root) {
+    fun removeMicroseconds(date: String): String {
+        val zIdx = date.lastIndexOf("Z")
+        val dotIdx = date.lastIndexOf(".")
+        return if (dotIdx != -1 && zIdx != -1 && zIdx - dotIdx > 4) {
+            date.substring(0, dotIdx + 4) + "Z"
+        } else {
+            date
+        }
+    }
+
     fun bind(event: Event) {
 
         binding.apply {
+            Glide.with(itemView.context).clear(image)
             author.text = event.author
 
-            val originalFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
+            val originalFormatWithoutMilliseconds =
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+            val originalFormatWithMilliseconds =
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
             val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.US)
-            originalFormat.timeZone = TimeZone.getTimeZone("UTC") // if the original time is in UTC
-            val date = originalFormat.parse(event.published)
+            originalFormatWithoutMilliseconds.timeZone =
+                TimeZone.getTimeZone("UTC")  // if the original time is in UTC
+            originalFormatWithMilliseconds.timeZone =
+                TimeZone.getTimeZone("UTC")  // if the original time is in UTC
 
+            var date = try {
+                originalFormatWithMilliseconds.parse(removeMicroseconds(event.published))
+            } catch (e: ParseException) {
+                originalFormatWithoutMilliseconds.parse(event.published)
+            }
             published.text = if (date != null) targetFormat.format(date) else "Unknown date"
+
+            date = try {
+                originalFormatWithMilliseconds.parse(removeMicroseconds(event.datetime))
+            } catch (e: ParseException) {
+                originalFormatWithoutMilliseconds.parse(event.datetime)
+            }
+            datetime.text = if (date != null) targetFormat.format(date) else "Unknown date"
+
+
 //
-            datetime.text = event.datetime
-            //authorJob.text = event.authorJob
+            datetimeTitle.text = "Дата проведения события"
+            authorJob.text = event.authorJob
             content.text = event.content
             type.text = event.type
             link.text = event.link
 
-            avatar.loadCircleCrop("${event.authorAvatar}")
-            like.isChecked = event.likedByMe
+
+
+            link.setOnClickListener {
+                val url = event.link
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                itemView.context.startActivity(intent)
+            }
+            event.authorAvatar?.let {
+                Glide.with(itemView.context)
+                    .load(it)
+                    .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                    .error(R.drawable.baseline_error_outline_24)
+                    .into(avatar)
+            }
+
+            if (event.attachment == null) {
+                image.visibility = View.GONE
+            } else {
+                event.attachment?.url?.let {
+                    Glide.with(itemView.context)
+                        .load(it)
+                        .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                        .error(R.drawable.baseline_error_outline_24)
+
+                        .into(image)
+                }
+            }
+
 
             menu.visibility = if (event.authorId == tokenManager.getId())
                 View.VISIBLE else View.INVISIBLE
@@ -126,12 +189,19 @@ class EventsViewHolder(
                     }
                 }.show()
             }
-
+            like.isChecked = event.likedByMe
             like.setOnClickListener {
                 like.isChecked = event.likedByMe
                 onInteractionListener.onLike(event)
             }
-            like.isChecked = event.likedByMe
+            val participantsAdapter = ParticipantsAdapter()
+            participantsList.layoutManager =
+                LinearLayoutManager(itemView.context, LinearLayoutManager.VERTICAL, false)
+            participantsList.adapter = participantsAdapter
+
+            event.users?.let { usersMap ->
+                participantsAdapter.setParticipants(usersMap.values.toList())
+            }
 
         }
     }

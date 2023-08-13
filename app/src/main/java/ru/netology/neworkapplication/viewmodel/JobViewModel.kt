@@ -111,7 +111,7 @@ class JobViewModel @Inject constructor(
                 val job = repository.getJob(jobId)
                 val jobs = repository.getJobAll(token).toList() //fetch updated job list
                 _jobs.value =
-                    jobs //update _jobs with the updated job list// Get post by id from repository
+                    jobs
                 if (job != null) {
                     edited.value = job
                 } else {

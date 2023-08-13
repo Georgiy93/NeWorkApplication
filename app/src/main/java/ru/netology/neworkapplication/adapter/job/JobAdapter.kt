@@ -50,18 +50,7 @@ class JobAdapter(
     }
 
 
-//class JobDiffCallback : DiffUtil.ItemCallback<FeedItemJob>() {
-//    override fun areItemsTheSame(oldItem: FeedItemJob, newItem: FeedItemJob): Boolean {
-//        if (oldItem::class != newItem::class) {
-//            return false
-//        }
-//        return oldItem.id == newItem.id
-//    }
-//
-//    override fun areContentsTheSame(oldItem: FeedItemJob, newItem: FeedItemJob): Boolean {
-//        return oldItem == newItem
-//    }
-//}
+
 
     class JobViewHolder(
         private val binding: CardJobBinding,
@@ -74,7 +63,7 @@ class JobAdapter(
                 position.text = job.position
                 start.text = job.start
                 finish.text = job.finish
-
+                link.text = job.link
                 menu.setOnClickListener {
                     PopupMenu(it.context, it).apply {
                         inflate(R.menu.options_post)

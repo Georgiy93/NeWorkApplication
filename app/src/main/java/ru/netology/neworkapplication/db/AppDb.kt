@@ -13,7 +13,7 @@ import ru.netology.neworkapplication.entity.*
 @Database(
     entities = [PostEntity::class, JobEntity::class, EventEntity::class, JobRemoteKeyEntity::class,
         PostRemoteKeyEntity::class, EventRemoteKeyEntity::class],
-    version = 25, // Increment the version number here
+    version = 27, // Increment the version number here
     exportSchema = false
 )
 @TypeConverters(TypeEventConverters::class, UserConvecters::class, ListConverter::class)

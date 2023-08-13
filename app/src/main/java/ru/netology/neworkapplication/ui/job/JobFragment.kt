@@ -108,7 +108,7 @@ class JobFragment : Fragment() {
 
         }
 
-
+binding.back.visibility = View.GONE
         binding.back.setOnClickListener {
             parentFragmentManager.commit {
                 replace(R.id.container, FeedFragment())
@@ -152,6 +152,7 @@ class JobFragment : Fragment() {
                 }
 
         }, viewLifecycleOwner)
+
     }
 
 

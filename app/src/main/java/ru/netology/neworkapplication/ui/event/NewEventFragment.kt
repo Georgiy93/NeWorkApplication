@@ -22,7 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewEventBinding
 import ru.netology.neworkapplication.dto.EventType
-import ru.netology.neworkapplication.ui.job.JobFragment
+import ru.netology.neworkapplication.ui.FeedFragment
 import ru.netology.neworkapplication.util.AndroidUtils
 import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.EventViewModel
@@ -35,10 +35,11 @@ class NewEventFragment : Fragment() {
 
     companion object {
         var Bundle.textArg: String? by StringArg
+        var Bundle.eventIdArg: String? by StringArg
     }
 
     private val viewModel: EventViewModel by activityViewModels()
-
+    private var participantsAdapter: ArrayAdapter<String>? = null
     private var fragmentBinding: FragmentNewEventBinding? = null
     private val participantsList = mutableListOf<String>()
 
@@ -58,13 +59,54 @@ class NewEventFragment : Fragment() {
             binding.datetime.setText(textArg)
             binding.link.setText(textArg)
             binding.edit.setText(textArg)
-
         }
+        participantsAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, participantsList)
+        val listView = ListView(requireContext())
+        listView.adapter = participantsAdapter
+
+
+        (binding.scrollView.getChildAt(0) as LinearLayout).addView(listView)
+
+        binding.addParticipantButton.setOnClickListener {
+            val participantLogin = binding.participantEditText.text.toString().trim()
+            if (participantLogin.isNotEmpty()) {
+//                participantsList.add(participantLogin)
+//                participantsAdapter?.notifyDataSetChanged()
+
+
+                arguments?.eventIdArg?.let { eventIdStr ->
+                    val eventId = eventIdStr.toInt()
+                    viewModel.addParticipants(participantLogin, eventId)
+                }
+            } else {
+
+                Snackbar.make(
+                    binding.root,
+                    "Please enter a participant login",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
+        }
+        binding.participantEditText.text?.clear()
+
+
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            val participant = participantsList[position]
+            AlertDialog.Builder(requireContext())
+                .setMessage("Do you want to remove $participant?")
+                .setPositiveButton("Yes") { _, _ ->
+                    participantsList.removeAt(position)
+                    participantsAdapter?.notifyDataSetChanged()
+                }
+                .setNegativeButton("No", null)
+                .show()
+            true
+        }
+
         fragmentBinding?.type?.setOnClickListener { view ->
-            // list of event types
             val eventTypes = arrayOf(EventType.OFFLINE, EventType.ONLINE)
             val eventTypeNames = eventTypes.map { it.toString() }.toTypedArray()
-            // create a dialog
             AlertDialog.Builder(requireContext())
                 .setTitle("Event Type")
                 .setSingleChoiceItems(eventTypeNames, -1) { dialog, which ->
@@ -77,7 +119,9 @@ class NewEventFragment : Fragment() {
                 }
                 .show()
         }
+
         binding.clear.visibility = View.GONE
+
         val photoLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 when (it.resultCode) {
@@ -95,15 +139,14 @@ class NewEventFragment : Fragment() {
                 }
             }
 
-
         binding.pickPhoto.setOnClickListener {
             ImagePicker.with(this)
                 .galleryOnly()
                 .crop()
                 .compress(2048)
                 .createIntent(photoLauncher::launch)
-
         }
+
         viewModel.media.observe(viewLifecycleOwner) { media ->
             if (media == null) {
                 binding.photoContainer.isGone = true
@@ -111,9 +154,10 @@ class NewEventFragment : Fragment() {
             }
             binding.photoContainer.isVisible = true
             binding.photo.setImageURI(media.uri)
-
         }
+
         binding.clear.visibility = View.VISIBLE
+
 
         return binding.root
     }
@@ -122,7 +166,6 @@ class NewEventFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val calendar = Calendar.getInstance()
-
 
         val dateTimeSetListener =
             DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
@@ -145,8 +188,6 @@ class NewEventFragment : Fragment() {
                 ).show()
             }
 
-
-// Use the separate listeners
         fragmentBinding?.datetime?.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 DatePickerDialog(
@@ -157,25 +198,6 @@ class NewEventFragment : Fragment() {
                 ).show()
             }
         }
-        val participantsAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, participantsList)
-        fragmentBinding?.participantsRecyclerView?.let {
-            it.visibility = View.GONE // Hide RecyclerView as we will use ListView
-        }
-        val listView = ListView(requireContext())
-        listView.adapter = participantsAdapter
-        (fragmentBinding?.scrollView?.getChildAt(0) as LinearLayout).addView(listView)
-
-        fragmentBinding?.addParticipantButton?.setOnClickListener {
-            val participantName = fragmentBinding?.participantEditText?.text.toString().trim()
-            if (participantName.isNotEmpty()) {
-                participantsList.add(participantName)
-                participantsAdapter.notifyDataSetChanged()
-                fragmentBinding?.participantEditText?.text?.clear()
-            }
-        }
-
-
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -185,27 +207,30 @@ class NewEventFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                 when (menuItem.itemId) {
                     R.id.save -> {
-                        fragmentBinding?.let {
-                            viewModel.changeDatetime(it.datetime.text.toString())
-                            viewModel.changeType(it.type.text.toString())
+                        fragmentBinding?.let { binding ->
+                            viewModel.changeDatetime(binding.datetime.text.toString())
+                            viewModel.changeType(binding.type.text.toString())
+                            viewModel.changeContent(binding.edit.text.toString())
 
-
-//                            if (it.datetime.text.toString().isEmpty()) {
-//                                viewModel.changeDatetime(null) // set finish to null if it is empty
-//                            } else {
-//                                viewModel.changeDatetime(it.finish.text.toString())
-//                            }
-                            if (it.link.text.toString().isEmpty()) {
-
-                                viewModel.changeLink("") // set finish to null if it is empty
+                            if (binding.link.text.toString().isEmpty()) {
+                                viewModel.changeLink(null) // set finish to null if it is empty
                             } else {
-                                viewModel.changeLink(it.link.text.toString())
+                                viewModel.changeLink(binding.link.text.toString())
                             }
+
+
+                            arguments?.eventIdArg?.let { eventIdStr ->
+                                val eventId = eventIdStr.toInt()
+                                participantsList.forEach { participantName ->
+                                    viewModel.addParticipants(participantName, eventId)
+                                }
+                            }
+
                             viewModel.saveEvent()
                             AndroidUtils.hideKeyboard(requireView())
                         }
                         parentFragmentManager.commit {
-                            replace(R.id.container, JobFragment())
+                            replace(R.id.container, FeedFragment())
                             addToBackStack(null)
                         }
                         true

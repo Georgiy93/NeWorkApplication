@@ -8,6 +8,7 @@ import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
 import androidx.navigation.Navigation
@@ -164,8 +165,11 @@ class NewJobFragment : Fragment() {
                             viewModel.save()
                             AndroidUtils.hideKeyboard(requireView())
                         }
+
                         parentFragmentManager.commit {
+
                             replace(R.id.container, JobFragment())
+
                             addToBackStack(null)
                         }
                         true

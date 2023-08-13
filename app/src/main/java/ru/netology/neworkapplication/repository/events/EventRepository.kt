@@ -18,7 +18,8 @@ interface EventRepository {
     suspend fun removeEventById(id: Int)
     suspend fun likeEventById(event: Event)
     suspend fun addParticipants(id: Int): Event
-
+    suspend fun userAll(): List<LoginRequest>
+    suspend fun removeParticipantById(id: Int): Event
 
 }
 

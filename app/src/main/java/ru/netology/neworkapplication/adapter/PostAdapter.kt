@@ -88,6 +88,7 @@ class PostViewHolder(
     fun bind(post: Post) {
 
         binding.apply {
+            Glide.with(itemView.context).clear(image)
             author.text = post.author
 
             val originalFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
@@ -102,6 +103,9 @@ class PostViewHolder(
             post.authorAvatar?.let {
                 Glide.with(itemView.context)
                     .load(it)
+                    .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                    .error(R.drawable.baseline_error_outline_24)
+
                     .into(avatar)
             }
 
@@ -112,6 +116,9 @@ class PostViewHolder(
                 post.attachment?.url?.let {
                     Glide.with(itemView.context)
                         .load(it)
+                        .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                        .error(R.drawable.baseline_error_outline_24)
+
                         .into(image)
                 }
             }

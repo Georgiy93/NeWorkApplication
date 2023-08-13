@@ -4,6 +4,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.netology.neworkapplication.BuildConfig
@@ -21,6 +23,15 @@ class ApiServiceModule {
     fun provideRetrofit(): Retrofit =
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(
+                OkHttpClient.Builder()
+                    .addInterceptor(
+                        HttpLoggingInterceptor()
+                            .apply {
+                                level = HttpLoggingInterceptor.Level.BODY
+                            }
+                    ).build()
+            )
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
