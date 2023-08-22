@@ -82,7 +82,7 @@ class PostViewHolder(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
     private val tokenManager: TokenManager,
-    //private val job: Job
+
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(post: Post) {
@@ -91,9 +91,11 @@ class PostViewHolder(
             Glide.with(itemView.context).clear(image)
             author.text = post.author
 
-            val originalFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
-            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.US)
-            originalFormat.timeZone = TimeZone.getTimeZone("UTC") // if the original time is in UTC
+            val originalFormat =
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale("ru", "RU"))
+            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("ru", "RU"))
+            originalFormat.timeZone =
+                TimeZone.getTimeZone("Europe/Moscow") // if the original time is in UTC
             val date = originalFormat.parse(post.published)
 
             published.text = if (date != null) targetFormat.format(date) else "Unknown date"

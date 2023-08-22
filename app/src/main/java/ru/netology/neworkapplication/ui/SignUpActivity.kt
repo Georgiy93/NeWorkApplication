@@ -29,6 +29,7 @@ class SignUpActivity : AppCompatActivity() {
 
         getImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             avatarUrl = uri
+            binding.avatarImageView.setImageURI(uri) // this line updates the avatar in the ImageView
         }
         binding.apply {
             chooseAvatar.setOnClickListener {

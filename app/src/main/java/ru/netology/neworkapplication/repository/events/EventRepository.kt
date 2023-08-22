@@ -11,13 +11,13 @@ interface EventRepository {
     suspend fun getEventsAll()
 
     fun getEventNewer(id: Long): Flow<Int>
-    suspend fun saveEvent(event: Event)
-    suspend fun saveEventWithAttachment(event: Event, media: MediaModel)
+    suspend fun saveEvent(event: Event): Event
+    suspend fun saveEventWithAttachment(event: Event, media: MediaModel): Event
 
     suspend fun getEvent(id: Int): Event
     suspend fun removeEventById(id: Int)
     suspend fun likeEventById(event: Event)
-    suspend fun addParticipants(id: Int): Event
+
     suspend fun userAll(): List<LoginRequest>
     suspend fun removeParticipantById(id: Int): Event
 

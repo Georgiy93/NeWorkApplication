@@ -27,6 +27,7 @@
         android:paddingEnd="4dp"
         tools:text="Имя участника" />
 
+
 </LinearLayout>
 
 

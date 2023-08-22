@@ -5,6 +5,9 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.*
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
 import androidx.core.view.MenuProvider
@@ -59,7 +62,8 @@ class EditEventFragment : Fragment() {
     }
 
     private val viewModel: EventViewModel by activityViewModels()
-
+    private var participantsAdapter: ArrayAdapter<String>? = null
+    private val participantsList = mutableListOf<String>()
     private var fragmentBinding: FragmentNewEventBinding? = null
     private var eventId: Int = 0
     private var eventContent: String = ""
@@ -107,20 +111,16 @@ class EditEventFragment : Fragment() {
         }
 
 
-
-
-
-
-
-
-
-
-
         viewModel.editedEvent.observe(viewLifecycleOwner) { event ->
             fragmentBinding?.edit?.setText(event.content)
             fragmentBinding?.link?.setText(event.link)
             fragmentBinding?.type?.setText(event.type)
             fragmentBinding?.datetime?.setText(event.datetime)
+
+            val participantsNames = viewModel.getParticipantNamesForEvent(event.id)
+            participantsList.clear()
+            participantsList.addAll(participantsNames)
+            participantsAdapter?.notifyDataSetChanged()
         }
 
         val calendar = Calendar.getInstance()
@@ -135,8 +135,8 @@ class EditEventFragment : Fragment() {
                     startCalendar.set(Calendar.SECOND, 0)
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale.US)
-                    sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
+                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
+                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
                     fragmentBinding?.datetime?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -219,7 +219,7 @@ class EditEventFragment : Fragment() {
                             AndroidUtils.hideKeyboard(requireView())
                         }
                         parentFragmentManager.commit {
-                            replace(R.id.container, FeedFragment())
+                            replace(R.id.container, EventFragment())
                             addToBackStack(null)
                         }
                         true
@@ -231,10 +231,64 @@ class EditEventFragment : Fragment() {
         binding.clear.setOnClickListener {
             viewModel.clearPhoto()
         }
+        participantsAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, participantsList)
+        val listView = ListView(requireContext())
+        listView.adapter = participantsAdapter
+
+        (binding.scrollView.getChildAt(0) as LinearLayout).addView(listView)
+
+        binding.addParticipantButton.setOnClickListener {
+            val participantLogin = binding.participantEditText.text.toString().trim()
+            if (participantLogin.isNotEmpty()) {
+                viewModel.addParticipant(participantLogin)
+                participantsList.add(participantLogin)
+                participantsAdapter?.notifyDataSetChanged()
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    "Please enter a participant login",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
+        }
+        binding.participantEditText.text?.clear()
+
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            val participant = participantsList[position]
+            AlertDialog.Builder(requireContext())
+                .setMessage("Do you want to remove $participant?")
+                .setPositiveButton("Yes") { _, _ ->
+                    viewModel.removeParticipantByName(participant)
+                    participantsList.removeAt(position)
+                    participantsAdapter?.notifyDataSetChanged()
+                }
+                .setNegativeButton("No", null)
+                .show()
+            true
+        }
+
         return binding.root
     }
+
     override fun onDestroyView() {
         fragmentBinding = null
         super.onDestroyView()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Как пользоваться")
+            .setMessage(
+                "Здесь вы можете создать новое событие. " +
+                        "В 1ой строке введите дату события. Далее нажмите и выберите тип события. " +
+                        "Далее напишите описание события. " + "При необходимости добавте участников, ссылку и картинку." +
+                        " Для удаления участника зажмите его имя или логин, после подтвердите удаление."
+            )
+            .setPositiveButton("Понятно", null)
+            .show()
     }
 }

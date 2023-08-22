@@ -86,16 +86,16 @@ class JobViewModel @Inject constructor(
 
     fun save() {
         edited.value?.let {
-            Log.d("JobViewModel", "Saving job: $it") // Add this line to print the job being saved
+            Log.d("JobViewModel", "Saving job: $it")
             viewModelScope.launch {
                 try {
                     val token = tokenManager.getToken()
                     repository.saveJob(it, token)
                     _jobCreated.value = Unit
-                    val jobs = repository.getJobAll(token).toList() //fetch updated job list
+                    val jobs = repository.getJobAll(token).toList()
                     _jobs.value = jobs
                 } catch (e: Exception) {
-                    Log.e("JobViewModel", "Error saving job", e) // Log error messages
+                    Log.e("JobViewModel", "Error saving job", e)
                 }
             }
         }
@@ -109,7 +109,7 @@ class JobViewModel @Inject constructor(
             try {
                 val token = tokenManager.getToken()
                 val job = repository.getJob(jobId)
-                val jobs = repository.getJobAll(token).toList() //fetch updated job list
+                val jobs = repository.getJobAll(token).toList()
                 _jobs.value =
                     jobs
                 if (job != null) {
@@ -170,8 +170,8 @@ class JobViewModel @Inject constructor(
             try {
                 val token = tokenManager.getToken()
                 repository.removeJobById(id, token)
-                val jobs = repository.getJobAll(token).toList() //fetch updated job list
-                _jobs.value = jobs //update _jobs with the updated job list
+                val jobs = repository.getJobAll(token).toList()
+                _jobs.value = jobs
             } catch (e: Exception) {
 
                 _messageError.value = e.message

@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.net.toFile
 import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
@@ -71,16 +72,14 @@ class NewEventFragment : Fragment() {
         binding.addParticipantButton.setOnClickListener {
             val participantLogin = binding.participantEditText.text.toString().trim()
             if (participantLogin.isNotEmpty()) {
-//                participantsList.add(participantLogin)
-//                participantsAdapter?.notifyDataSetChanged()
+
+                viewModel.addParticipant(participantLogin)
 
 
-                arguments?.eventIdArg?.let { eventIdStr ->
-                    val eventId = eventIdStr.toInt()
-                    viewModel.addParticipants(participantLogin, eventId)
-                }
+                participantsList.add(participantLogin)
+                participantsAdapter?.notifyDataSetChanged()
+
             } else {
-
                 Snackbar.make(
                     binding.root,
                     "Please enter a participant login",
@@ -90,9 +89,10 @@ class NewEventFragment : Fragment() {
         }
         binding.participantEditText.text?.clear()
 
-
         listView.setOnItemLongClickListener { _, _, position, _ ->
+
             val participant = participantsList[position]
+
             AlertDialog.Builder(requireContext())
                 .setMessage("Do you want to remove $participant?")
                 .setPositiveButton("Yes") { _, _ ->
@@ -164,7 +164,16 @@ class NewEventFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        AlertDialog.Builder(requireContext())
+            .setTitle("Как пользоваться")
+            .setMessage(
+                "Здесь вы можете создать новое событие. " +
+                        "В 1ой строке введите дату события. Далее нажмите и выберите тип события. " +
+                        "Далее напишите описание события. " + "При необходимости добавте участников, ссылку и картинку." +
+                        " Для удаления участника зажмите его имя или логин, после подтвердите удаление."
+            )
+            .setPositiveButton("Понятно", null)
+            .show()
         val calendar = Calendar.getInstance()
 
         val dateTimeSetListener =
@@ -177,8 +186,8 @@ class NewEventFragment : Fragment() {
                     startCalendar.set(Calendar.SECOND, 0)
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale.US)
-                    sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
+                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
+                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
                     fragmentBinding?.datetime?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -219,18 +228,13 @@ class NewEventFragment : Fragment() {
                             }
 
 
-                            arguments?.eventIdArg?.let { eventIdStr ->
-                                val eventId = eventIdStr.toInt()
-                                participantsList.forEach { participantName ->
-                                    viewModel.addParticipants(participantName, eventId)
-                                }
-                            }
+
 
                             viewModel.saveEvent()
                             AndroidUtils.hideKeyboard(requireView())
                         }
                         parentFragmentManager.commit {
-                            replace(R.id.container, FeedFragment())
+                            replace(R.id.container, EventFragment())
                             addToBackStack(null)
                         }
                         true

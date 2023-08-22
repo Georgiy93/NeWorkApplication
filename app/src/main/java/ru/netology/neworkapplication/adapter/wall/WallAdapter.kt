@@ -80,10 +80,11 @@ class WallViewHolder(
             binding.apply {
                 author.text = post.author
 
-                val originalFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
-                val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.US)
+                val originalFormat =
+                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale("ru", "RU"))
+                val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("ru", "RU"))
                 originalFormat.timeZone =
-                    TimeZone.getTimeZone("UTC") // if the original time is in UTC
+                    TimeZone.getTimeZone("Europe/Moscow") // if the original time is in UTC
                 val date = originalFormat.parse(post.published)
 
                 published.text = if (date != null) targetFormat.format(date) else "Unknown date"

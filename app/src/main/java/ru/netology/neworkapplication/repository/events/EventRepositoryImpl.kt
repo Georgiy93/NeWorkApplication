@@ -97,7 +97,7 @@ class EventRepositoryImpl @Inject constructor(
         .catch { e -> throw AppError.from(e) }
         .flowOn(Dispatchers.Default)
 
-    override suspend fun saveEvent(event: Event) {
+    override suspend fun saveEvent(event: Event): Event {
         try {
             val token = tokenManager.getToken() // Get the token
             val authHeader = token
@@ -109,6 +109,7 @@ class EventRepositoryImpl @Inject constructor(
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             eventDao.insert(EventEntity.fromDto(body))
+            return body
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -117,7 +118,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveEventWithAttachment(event: Event, upload: MediaModel) {
+    override suspend fun saveEventWithAttachment(event: Event, upload: MediaModel): Event {
         try {
             val token = tokenManager.getToken() // Get the token
             val authHeader = token
@@ -136,6 +137,7 @@ class EventRepositoryImpl @Inject constructor(
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             eventDao.insert(EventEntity.fromDto(body))
+            return body
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -219,27 +221,6 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addParticipants(id: Int): Event {
-        try {
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
-            val response = apiService.addParticipants(authHeader, id)
-            Log.d("EventRepository", "Response: ${response.code()} - ${response.message()}")
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-
-            eventDao.insert(EventEntity.fromDto(body))
-            return body
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw UnknownError
-        }
-    }
 
     override suspend fun removeParticipantById(id: Int): Event {
         try {

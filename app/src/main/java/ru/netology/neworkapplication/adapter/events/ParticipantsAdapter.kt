@@ -4,8 +4,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.dto.UserPreview
 
@@ -34,14 +36,25 @@ class ParticipantsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.header_participants, parent, false)
             )
-            else -> ParticipantViewHolder(TextView(parent.context))
+            TYPE_ITEM -> ParticipantViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(
+                        R.layout.item_participant,
+                        parent,
+                        false
+                    ) // Измените на ваш layout для участника
+            )
+            else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is ParticipantViewHolder && position > 0) {
+        if (holder is ParticipantViewHolder && position > 0 && position <= participants.size) {
             val participant = participants[position - 1]
             holder.textView.text = participant.name
+            Glide.with(holder.avatarImageView.context)
+                .load(participant.avatar)
+                .into(holder.avatarImageView)
         } else if (holder is HeaderViewHolder) {
             holder.headerText.text = "Participants"
         }
@@ -53,5 +66,8 @@ class ParticipantsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         val headerText: TextView = view.findViewById(R.id.headerText)
     }
 
-    class ParticipantViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
+    class ParticipantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView = view.findViewById(R.id.participantName)
+        val avatarImageView: ImageView = view.findViewById(R.id.participantAvatar)
+    }
 }

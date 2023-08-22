@@ -112,13 +112,9 @@ class NewPostFragment : Fragment() {
                 when (menuItem.itemId) {
                     R.id.save -> {
                         fragmentBinding?.let {
-//                            val content = it.edit.text.toString()
-//                            val imageBytes = imageUrl?.let { requireContext().contentResolver.openInputStream(it) }
-//                                ?.use(InputStream::readBytes)
-//                            val imageFile = imageBytes?.toRequestBody("image/*".toMediaTypeOrNull())
-//                                ?.let { MultipartBody.Part.createFormData("file", "file", it) }
 
-                            viewModel.changeContent(it.edit.text.toString())
+
+                        viewModel.changeContent(it.edit.text.toString())
                             viewModel.save()
                             AndroidUtils.hideKeyboard(requireView())
                         }

@@ -101,14 +101,14 @@ class EventsViewHolder(
             author.text = event.author
 
             val originalFormatWithoutMilliseconds =
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale("ru", "RU"))
             val originalFormatWithMilliseconds =
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.US)
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale("ru", "RU"))
+            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("ru", "RU"))
             originalFormatWithoutMilliseconds.timeZone =
-                TimeZone.getTimeZone("UTC")  // if the original time is in UTC
+                TimeZone.getTimeZone("Europe/Moscow")  // if the original time is in UTC
             originalFormatWithMilliseconds.timeZone =
-                TimeZone.getTimeZone("UTC")  // if the original time is in UTC
+                TimeZone.getTimeZone("Europe/Moscow")  // if the original time is in UTC
 
             var date = try {
                 originalFormatWithMilliseconds.parse(removeMicroseconds(event.published))
@@ -189,19 +189,25 @@ class EventsViewHolder(
                     }
                 }.show()
             }
+
             like.isChecked = event.likedByMe
             like.setOnClickListener {
-                like.isChecked = event.likedByMe
+
                 onInteractionListener.onLike(event)
             }
             val participantsAdapter = ParticipantsAdapter()
-            participantsList.layoutManager =
-                LinearLayoutManager(itemView.context, LinearLayoutManager.VERTICAL, false)
+            val participants = event.users.values.toList()
+
+            participantsAdapter.setParticipants(participants)
+
+            participantsList.layoutManager = LinearLayoutManager(itemView.context)
             participantsList.adapter = participantsAdapter
 
-            event.users?.let { usersMap ->
-                participantsAdapter.setParticipants(usersMap.values.toList())
-            }
+            event.speakerIds
+                .orEmpty().mapNotNull {
+                    event.users[it]
+                }
+                .let(participantsAdapter::setParticipants)
 
         }
     }

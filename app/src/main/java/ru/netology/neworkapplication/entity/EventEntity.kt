@@ -34,7 +34,7 @@ data class EventEntity(
 
     val link: String?,
     val ownedByMe: Boolean,
-    val users: Map<Long, UserPreview> = emptyMap(),
+    val users: Map<Int, UserPreview> = emptyMap(),
 
 //    @Embedded
 //    var users: UserPreview?,

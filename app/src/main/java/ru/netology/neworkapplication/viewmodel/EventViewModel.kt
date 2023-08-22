@@ -41,7 +41,8 @@ private val empty = Event(
     datetime = "",
     link = null,
     type = "OFFLINE",
-    participatedByMe = true
+    participatedByMe = true,
+    users = emptyMap()
 
 
 )
@@ -56,6 +57,7 @@ class EventViewModel @Inject constructor(
     auth: AppAuth,
 ) : ViewModel() {
     private val cached = repository.data.cachedIn(viewModelScope)
+    private val creatingEvent = MutableLiveData<Event?>(null)
     private val _imageUri = MutableLiveData<Uri?>()
     val imageUri: LiveData<Uri?>
         get() = _imageUri
@@ -84,6 +86,9 @@ class EventViewModel @Inject constructor(
     private val edited = MutableLiveData(empty)
     val editedEvent: LiveData<Event>
         get() = edited
+    private val eventWithParticipant = MutableLiveData(empty)
+    val editedEventWithParticipant: LiveData<Event>
+        get() = eventWithParticipant
     private val _eventCreated = SingleLiveEvent<Unit>()
     val eventCreated: LiveData<Unit>
         get() = _eventCreated
@@ -116,42 +121,7 @@ class EventViewModel @Inject constructor(
         _media.value = null
     }
 
-    fun saveEvent() {
-        edited.value?.let {
-            viewModelScope.launch {
-                try {
-                    val token = tokenManager.getToken()
-                    val jobs = repositoryJob.getJobAll(token)
-                    val lastJob = jobs.firstOrNull()
 
-                    if (lastJob != null) {
-                        it.copy(authorJob = lastJob.name)
-                    } else {
-                        it.copy(authorJob = "")
-                    }
-                    when (val media = media.value) {
-                        null -> repository.saveEvent(it)
-
-                        else -> {
-                            repository.saveEventWithAttachment(it, media)
-                        }
-                    }
-
-                    _eventCreated.value = Unit
-                    _dataState.value = FeedModelState()
-                    Log.d(
-                        "EventViewModel",
-                        "Event saved with content: ${it.content} and link: ${it.link}"
-                    )
-
-                } catch (e: Exception) {
-                    _dataState.value = FeedModelState(error = true)
-                }
-
-            }
-        }
-        edited.value = empty
-    }
 
 
     fun editEvent(eventId: Int) {
@@ -230,29 +200,36 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun addParticipants(login: String, eventId: Int) {
+    fun getParticipantNamesForEvent(eventId: Int): List<String> {
+
+        val event = edited.value
+        if (event?.id == eventId && event.users != null) {
+
+            return event.users.values.map { it.name }
+        }
+        return emptyList()
+    }
+
+
+    fun addParticipant(login: String) {
         viewModelScope.launch {
             try {
                 val userList = repository.userAll()
                 val user = userList.find { it.login == login }
 
                 if (user != null) {
-                    val updatedEvent = repository.addParticipants(eventId)
-
                     val userIdInt = user.id.toInt()
-                    if (updatedEvent.participantsIds?.contains(userIdInt) == false) {
-
+                    val currentEvent = edited.value ?: empty
+                    val currentParticipants = edited.value?.speakerIds ?: emptyList()
+                    if (!currentParticipants.contains(userIdInt)) {
+                        val updatedParticipants = currentParticipants + userIdInt
                         val userPreview = UserPreview(user.name, user.avatar)
-                        val updatedUsersMap = updatedEvent.users.toMutableMap()
-                        updatedUsersMap[user.id.toLong()] = userPreview
-
-                        val finalUpdatedEvent = updatedEvent.copy(users = updatedUsersMap)
-
-
-                        repository.saveEvent(finalUpdatedEvent)
-
-                        edited.value = finalUpdatedEvent
-
+                        val updatedUsersMap = currentEvent.users?.toMutableMap() ?: mutableMapOf()
+                        updatedUsersMap[user.id.toInt()] = userPreview
+                        edited.value = currentEvent.copy(
+                            speakerIds = updatedParticipants,
+                            users = updatedUsersMap
+                        )
                     } else {
                         _messageError.value = "User is already a participant"
                     }
@@ -265,20 +242,71 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun removeParticipant(name: String, eventId: Int) {
+    fun removeParticipantByName(name: String) {
         viewModelScope.launch {
             try {
                 val userList = repository.userAll()
-                val userToRemove = userList.find { it.name == name }
-                if (userToRemove != null) {
-                    val updatedEvent = repository.removeParticipantById(eventId)
-                    edited.value = updatedEvent
-                } else {
+                val user = userList.find { it.name == name }
+
+                if (user == null) {
                     _messageError.value = "User not found"
+                    return@launch
+                }
+
+                val userIdInt = user.id.toInt()
+                val currentEvent = edited.value ?: return@launch
+
+                if (currentEvent.users.containsKey(userIdInt)) {
+                    val updatedUsersMap = currentEvent.users.toMutableMap()
+                    updatedUsersMap.remove(userIdInt)
+
+                    val updatedParticipants = currentEvent.speakerIds?.filter { it != userIdInt }
+
+                    edited.value = currentEvent.copy(
+                        speakerIds = updatedParticipants,
+                        users = updatedUsersMap
+                    )
+                } else {
+                    _messageError.value = "User is not a participant"
                 }
             } catch (e: Exception) {
-                _messageError.value = e.message
+                _messageError.value = e.message ?: "An error occurred"
             }
         }
+    }
+
+
+    fun saveEvent() {
+
+        edited.value?.let { currentEvent ->
+            viewModelScope.launch {
+                try {
+                    val token = tokenManager.getToken()
+                    val jobs = repositoryJob.getJobAll(token)
+                    val lastJob = jobs.firstOrNull()
+
+                    val updatedEvent = if (lastJob != null) {
+                        currentEvent.copy(authorJob = lastJob.name)
+                    } else {
+                        currentEvent.copy(authorJob = "")
+                    }
+
+                    when (val media = media.value) {
+                        null -> repository.saveEvent(updatedEvent)
+                        else -> repository.saveEventWithAttachment(updatedEvent, media)
+                    }
+
+                    _dataState.value = FeedModelState()
+
+
+                } catch (e: Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                }
+
+            }
+        }
+
+        edited.value = empty
+
     }
 }

@@ -27,6 +27,6 @@ data class Event(
     val attachment: Attachment? = null,
     val link: String?,
     val ownedByMe: Boolean = false,
-    val users: Map<Long, UserPreview> = emptyMap()
+    val users: Map<Int, UserPreview> = emptyMap()
 ) : FeedItemEvent
 

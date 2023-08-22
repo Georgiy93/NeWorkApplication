@@ -94,9 +94,10 @@
                 android:id="@+id/participantsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:tooltipText="Long press to remove participant" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

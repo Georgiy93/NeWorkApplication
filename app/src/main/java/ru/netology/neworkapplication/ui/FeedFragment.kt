@@ -1,6 +1,7 @@
 package ru.netology.neworkapplication.ui
 
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -29,6 +30,7 @@ import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.FragmentFeedBinding
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.ui.event.EditEventFragment
+import ru.netology.neworkapplication.ui.event.EventFragment
 import ru.netology.neworkapplication.ui.event.NewEventFragment
 import ru.netology.neworkapplication.ui.job.JobFragment
 import ru.netology.neworkapplication.ui.wall.WallFeedFragment
@@ -43,7 +45,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
     private val postViewModel: PostViewModel by activityViewModels()
-    private val eventViewModel: EventViewModel by activityViewModels()
+
 
     @Inject
     lateinit var tokenManager: TokenManager
@@ -52,7 +54,7 @@ class FeedFragment : Fragment() {
     lateinit var auth: AppAuth
 
     lateinit var postAdapter: PostsAdapter
-    lateinit var eventAdapter: EventsAdapter
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,46 +91,15 @@ class FeedFragment : Fragment() {
             }
 
         }, tokenManager)
-        eventAdapter = EventsAdapter(object : OnInteractionListenerEvent {
-
-            override fun onEdit(event: Event) {
-                eventViewModel.editEvent(event.id)
-            }
-
-            override fun onLike(event: Event) {
-                eventViewModel.likeEventById(event)
-            }
-
-            override fun onRemove(event: Event) {
-                eventViewModel.removeEventById(event.id)
-            }
-
-            override fun onEditNavigate(event: Event) {
-                parentFragmentManager.commit {
-                    replace(R.id.container, EditEventFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("content", event.content)
-
-                            putInt("id", event.id)
-                        }
-                    })
-                    addToBackStack(null)
-                }
-            }
 
 
-        }, tokenManager)
-        val adapter = ConcatAdapter(
-            eventAdapter.withLoadStateHeaderAndFooter(
-                header = EventLoadingStateAdapter { eventAdapter.retry() },
-                footer = EventLoadingStateAdapter { eventAdapter.retry() }
-            ),
+        val adapter =
             postAdapter.withLoadStateHeaderAndFooter(
                 header = PostLoadingStateAdapter { postAdapter.retry() },
                 footer = PostLoadingStateAdapter { postAdapter.retry() }
-            ),
-
             )
+
+
         binding.list.adapter = adapter
         postViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
@@ -138,20 +109,11 @@ class FeedFragment : Fragment() {
                     .show()
             }
         }
-        eventViewModel.dataState.observe(viewLifecycleOwner) { state ->
-            binding.progress.isVisible = state.loading
-            if (state.error) {
-                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.retry_loading) { eventViewModel.loadEvents() }
-                    .show()
-            }
-        }
+
         postViewModel.messageError.observe(viewLifecycleOwner) { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
-        eventViewModel.messageError.observe(viewLifecycleOwner) { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
+
 
 
 
@@ -163,18 +125,14 @@ class FeedFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launchWhenCreated {
-            eventViewModel.data.collectLatest { pagingData ->
-                eventAdapter.submitData(pagingData)
-            }
-        }
+
 
 
 
 
         binding.swiperefresh.setOnRefreshListener {
             postAdapter.refresh()
-            eventAdapter.refresh()
+
         }
         lifecycleScope.launchWhenCreated {
             postViewModel.data.collectLatest { pagingData ->
@@ -183,24 +141,14 @@ class FeedFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launchWhenCreated {
-            eventViewModel.data.collectLatest { pagingData ->
-                eventAdapter.submitData(pagingData)
-                binding.swiperefresh.isRefreshing = false
-            }
-        }
+
         binding.fab.setOnClickListener {
             parentFragmentManager.commit {
                 replace(R.id.container, NewPostFragment())
                 addToBackStack(null)
             }
         }
-        binding.fabEvent.setOnClickListener {
-            parentFragmentManager.commit {
-                replace(R.id.container, NewEventFragment())
-                addToBackStack(null)
-            }
-        }
+
 
         return binding.root
 
@@ -208,7 +156,18 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        AlertDialog.Builder(requireContext())
+            .setTitle("Добро пожаловать в NETAPP!")
+            .setMessage(
 
+                "Cверху расположены кнопки:\n" +
+                        "1ая для просмотра событий, \n" +
+                        "2ая для просмотра вашего место работы, \n" +
+                        "3ия для просмотра ваших постов, \n" +
+                        "4ая это выход из вашего аккаунта \n"
+            )
+            .setPositiveButton("Понятно", null)
+            .show()
 
 
         requireActivity().addMenuProvider(object : MenuProvider {
@@ -234,6 +193,13 @@ class FeedFragment : Fragment() {
                     R.id.job -> {
                         parentFragmentManager.commit {
                             replace(R.id.container, JobFragment())
+                            addToBackStack(null)
+                        }
+                        true
+                    }
+                    R.id.event -> {
+                        parentFragmentManager.commit {
+                            replace(R.id.container, EventFragment())
                             addToBackStack(null)
                         }
                         true

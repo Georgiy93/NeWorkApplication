@@ -29,4 +29,5 @@
     <string name="empty_jobs">There are not jobs</string>
     <string name="add_event">event</string>
     <string name="description_participant_avatar">Participant_avatar</string>
+    <string name="event">event</string>
 </resources>

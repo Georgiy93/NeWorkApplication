@@ -25,6 +25,8 @@ import ru.netology.neworkapplication.databinding.FragmentJobBinding
 import ru.netology.neworkapplication.dto.Job
 import ru.netology.neworkapplication.ui.AuthActivity
 import ru.netology.neworkapplication.ui.FeedFragment
+import ru.netology.neworkapplication.ui.event.EventFragment
+import ru.netology.neworkapplication.ui.wall.WallFeedFragment
 import ru.netology.neworkapplication.util.TokenManager
 import ru.netology.neworkapplication.viewmodel.JobViewModel
 import javax.inject.Inject
@@ -89,24 +91,20 @@ class JobFragment : Fragment() {
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
 
-            // binding.swiperefresh.isRefreshing = state.refreshing
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadJobs() }
                     .show()
             }
         }
-//        lifecycleScope.launchWhenCreated {
-//            viewModel.jobs.collectLatest { adapter.submitData(it) }
-//        }
 
-//Refreshing SwipeRefreshLayout is displayed only with manual Refresh
-
-//
         binding.swiperefresh.setOnRefreshListener {
             viewModel.loadJobs()
 
+            binding.swiperefresh.isRefreshing = false
+
         }
+
 
 binding.back.visibility = View.GONE
         binding.back.setOnClickListener {
@@ -136,6 +134,7 @@ binding.back.visibility = View.GONE
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_main, menu)
+
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
@@ -144,6 +143,21 @@ binding.back.visibility = View.GONE
                         val intent = Intent(context, AuthActivity::class.java)
                         startActivity(intent)
                         requireActivity().finish()
+                        true
+                    }
+                    R.id.wall -> {
+                        parentFragmentManager.commit {
+                            replace(R.id.container, WallFeedFragment())
+                            addToBackStack(null)
+                        }
+                        true
+                    }
+
+                    R.id.event -> {
+                        parentFragmentManager.commit {
+                            replace(R.id.container, EventFragment())
+                            addToBackStack(null)
+                        }
                         true
                     }
 

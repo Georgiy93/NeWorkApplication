@@ -83,8 +83,8 @@ class NewJobFragment : Fragment() {
                     startCalendar.set(Calendar.SECOND, 0)
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale.US)
-                    sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
+                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
+                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
                     fragmentBinding?.start?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -104,8 +104,8 @@ class NewJobFragment : Fragment() {
                     finishCalendar.set(Calendar.SECOND, 0)
                     finishCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale.US)
-                    sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
+                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
+                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
                     fragmentBinding?.finish?.setText(sdf.format(finishCalendar.time))
                 }
                 TimePickerDialog(
@@ -166,12 +166,7 @@ class NewJobFragment : Fragment() {
                             AndroidUtils.hideKeyboard(requireView())
                         }
 
-                        parentFragmentManager.commit {
-
-                            replace(R.id.container, JobFragment())
-
-                            addToBackStack(null)
-                        }
+                        parentFragmentManager.popBackStack()
                         true
                     }
                     else -> false
