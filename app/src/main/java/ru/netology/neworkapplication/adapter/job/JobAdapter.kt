@@ -9,11 +9,12 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.neworkapplication.R
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.CardJobBinding
 
 import ru.netology.neworkapplication.dto.FeedItemJob
 import ru.netology.neworkapplication.dto.Job
-import ru.netology.neworkapplication.util.TokenManager
+
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,8 +29,8 @@ interface OnInteractionListener {
 
 class JobAdapter(
     private val onInteractionListener: OnInteractionListener,
-    private val tokenManager: TokenManager
-) : RecyclerView.Adapter<JobAdapter.JobViewHolder>() {
+
+    ) : RecyclerView.Adapter<JobAdapter.JobViewHolder>() {
 
     private var jobs: List<Job> = emptyList()
 
@@ -42,7 +43,7 @@ class JobAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobViewHolder {
         val binding = CardJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return JobViewHolder(binding, onInteractionListener, tokenManager)
+        return JobViewHolder(binding, onInteractionListener)
     }
 
     override fun onBindViewHolder(holder: JobViewHolder, position: Int) {
@@ -55,8 +56,8 @@ class JobAdapter(
     class JobViewHolder(
         private val binding: CardJobBinding,
         private val onInteractionListener: OnInteractionListener,
-        private val tokenManager: TokenManager
-    ) : RecyclerView.ViewHolder(binding.root) {
+
+        ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(job: Job) {
             binding.apply {
                 name.text = job.name

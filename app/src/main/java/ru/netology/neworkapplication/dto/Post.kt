@@ -3,12 +3,12 @@ package ru.netology.neworkapplication.dto
 import ru.netology.neworkapplication.enumeration.AttachmentType
 
 sealed interface FeedItem {
-    val id: Int
+    val id: Long
 }
 
 data class Post(
-    override val id: Int,
-    val authorId: Int,
+    override val id: Long,
+    val authorId: Long,
     val author: String,
     val authorAvatar: String?,
     val authorJob: String? = "",

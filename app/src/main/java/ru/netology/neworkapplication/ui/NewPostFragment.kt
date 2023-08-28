@@ -43,7 +43,6 @@ class NewPostFragment : Fragment() {
 
     private var fragmentBinding: FragmentNewPostBinding? = null
 
-    private var authorJob: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -100,7 +99,7 @@ class NewPostFragment : Fragment() {
 
         }
         binding.clear.visibility = View.VISIBLE
-        //return binding.root
+
 
 
         requireActivity().addMenuProvider(object : MenuProvider {

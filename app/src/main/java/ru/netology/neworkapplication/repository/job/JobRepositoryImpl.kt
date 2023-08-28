@@ -16,7 +16,7 @@ import ru.netology.neworkapplication.entity.toEntity
 import ru.netology.neworkapplication.error.ApiError
 import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
-import ru.netology.neworkapplication.util.TokenManager
+
 
 
 import java.io.IOException
@@ -29,7 +29,7 @@ class JobRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
 
 
-    private val tokenManager: TokenManager,
+
 
     ) : JobRepository {
     @OptIn(ExperimentalPagingApi::class)
@@ -40,12 +40,11 @@ class JobRepositoryImpl @Inject constructor(
         pagingData.map(JobEntity::toDto)
     }
 
-    override suspend fun getJobAll(token: String): List<Job> {
+    override suspend fun getJobAll(): List<Job> {
         try {
-            val token = tokenManager.getToken() // Get the token
 
-            val response = apiService.getJobAll(token)
-            Log.d("apiService.getAll", "Response: ${response.code()} - ${response.message()}")
+
+            val response = apiService.getJobAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -63,12 +62,11 @@ class JobRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun saveJob(job: Job, token: String) {
+    override suspend fun saveJob(job: Job) {
         try {
-            val authToken = tokenManager.getToken()
 
-            val response = apiService.saveJob(authToken, job)
-            Log.d("JobRepository", "Response: ${response.code()} - ${response.message()}")
+
+            val response = apiService.saveJob(job)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -78,20 +76,16 @@ class JobRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
-            Log.e(
-                "JobRepository",
-                "Error in saveJob: ",
-                e
-            ) // Logs the exception message and stack trace
+
             e.printStackTrace()
             throw UnknownError
         }
     }
 
 
-    override suspend fun removeJobById(id: Int, token: String) {
-        val token = tokenManager.getToken()
-        val response = apiService.removeJobById(id, token)
+    override suspend fun removeJobById(id: Long) {
+
+        val response = apiService.removeJobById(id)
         if (!response.isSuccessful) {
             throw HttpException(response)
         }
@@ -100,16 +94,15 @@ class JobRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun getJob(id: Int): Job {
+    override suspend fun getJob(id: Long): Job {
         try {
 
             val response = apiService.getJob(id)
-            Log.d("JobRepository", "Response: ${response.code()} - ${response.message()}")
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            return body // Returns the post as DTO
+            return body
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {

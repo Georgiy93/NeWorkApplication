@@ -82,7 +82,7 @@ class NewEventFragment : Fragment() {
             } else {
                 Snackbar.make(
                     binding.root,
-                    "Please enter a participant login",
+                    getString(R.string.participant_login),
                     Snackbar.LENGTH_SHORT
                 ).show()
             }
@@ -94,12 +94,12 @@ class NewEventFragment : Fragment() {
             val participant = participantsList[position]
 
             AlertDialog.Builder(requireContext())
-                .setMessage("Do you want to remove $participant?")
-                .setPositiveButton("Yes") { _, _ ->
+                .setMessage(getString(R.string.remove_participant_confirmation, participant))
+                .setPositiveButton(R.string.yes) { _, _ ->
                     participantsList.removeAt(position)
                     participantsAdapter?.notifyDataSetChanged()
                 }
-                .setNegativeButton("No", null)
+                .setNegativeButton(R.string.no, null)
                 .show()
             true
         }
@@ -108,13 +108,13 @@ class NewEventFragment : Fragment() {
             val eventTypes = arrayOf(EventType.OFFLINE, EventType.ONLINE)
             val eventTypeNames = eventTypes.map { it.toString() }.toTypedArray()
             AlertDialog.Builder(requireContext())
-                .setTitle("Event Type")
+                .setTitle(getString(R.string.event_type))
                 .setSingleChoiceItems(eventTypeNames, -1) { dialog, which ->
                     val eventType = eventTypes[which]
                     fragmentBinding?.type?.setText(eventType.toString())
                     dialog.dismiss()
                 }
-                .setNegativeButton("Cancel") { dialog, _ ->
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                     dialog.cancel()
                 }
                 .show()
@@ -165,14 +165,11 @@ class NewEventFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         AlertDialog.Builder(requireContext())
-            .setTitle("Как пользоваться")
+            .setTitle(getString(R.string.event_instruction_title))
             .setMessage(
-                "Здесь вы можете создать новое событие. " +
-                        "В 1ой строке введите дату события. Далее нажмите и выберите тип события. " +
-                        "Далее напишите описание события. " + "При необходимости добавте участников, ссылку и картинку." +
-                        " Для удаления участника зажмите его имя или логин, после подтвердите удаление."
+                R.string.event_creation_instructions
             )
-            .setPositiveButton("Понятно", null)
+            .setPositiveButton(R.string.understand, null)
             .show()
         val calendar = Calendar.getInstance()
 
@@ -186,8 +183,8 @@ class NewEventFragment : Fragment() {
                     startCalendar.set(Calendar.SECOND, 0)
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
-                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
+                    val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+                    sdf.setTimeZone(TimeZone.getDefault())
                     fragmentBinding?.datetime?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -222,7 +219,7 @@ class NewEventFragment : Fragment() {
                             viewModel.changeContent(binding.edit.text.toString())
 
                             if (binding.link.text.toString().isEmpty()) {
-                                viewModel.changeLink(null) // set finish to null if it is empty
+                                viewModel.changeLink(null)
                             } else {
                                 viewModel.changeLink(binding.link.text.toString())
                             }

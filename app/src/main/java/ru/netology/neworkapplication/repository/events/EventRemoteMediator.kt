@@ -8,13 +8,14 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import retrofit2.HttpException
 import ru.netology.neworkapplication.api.ApiService
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dao.EventDao
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.dto.EventRemoteKeyDao
 import ru.netology.neworkapplication.entity.EventEntity
 import ru.netology.neworkapplication.entity.EventRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
-import ru.netology.neworkapplication.util.TokenManager
+
 import java.io.IOException
 
 
@@ -24,7 +25,7 @@ class EventRemoteMediator(
     private val service: ApiService,
     private val eventRemoteKeyDao: EventRemoteKeyDao,
     private val appDb: AppDb,
-    private val tokenManager: TokenManager,
+
 ) : RemoteMediator<Int, EventEntity>() {
 
 
@@ -32,7 +33,7 @@ class EventRemoteMediator(
         loadType: LoadType,
         state: PagingState<Int, EventEntity>
     ): MediatorResult {
-        val token = tokenManager.getToken()
+
         try {
 
 
@@ -44,18 +45,11 @@ class EventRemoteMediator(
                     val id = eventRemoteKeyDao.max()
 
                     if (id == null) {
-                        val response = service.getEventLatest(token, state.config.pageSize)
-                        Log.d(
-                            "service.getEventLatest",
-                            "Response: ${response.code()} - ${response.message()}"
-                        )
+                        val response = service.getEventLatest(state.config.pageSize)
                         response
                     } else {
-                        val response = service.getEvenAfter(token, id, state.config.pageSize)
-                        Log.d(
-                            "service.getEvenAfter",
-                            "Response: ${response.code()} - ${response.message()}"
-                        )
+                        val response = service.getEvenAfter(id, state.config.pageSize)
+
                         response
                     }
                 }
@@ -64,11 +58,8 @@ class EventRemoteMediator(
                 LoadType.APPEND -> {
 
                     val id = eventRemoteKeyDao.min() ?: return MediatorResult.Success(false)
-                    val response = service.getEventBefore(token, id, state.config.pageSize)
-                    Log.d(
-                        "service.getEventBefore",
-                        "Response: ${response.code()} - ${response.message()}"
-                    )
+                    val response = service.getEventBefore(id, state.config.pageSize)
+
                     response
 
                 }

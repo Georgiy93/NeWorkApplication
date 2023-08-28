@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.ui.wall
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -14,17 +15,19 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.neworkapplication.R
 
 import ru.netology.neworkapplication.adapter.wall.WallAdapter
 import ru.netology.neworkapplication.adapter.wall.WallLoadingStateAdapter
 import ru.netology.neworkapplication.auth.AppAuth
+
 import ru.netology.neworkapplication.databinding.FragmentWallBinding
 import ru.netology.neworkapplication.ui.AuthActivity
 import ru.netology.neworkapplication.ui.event.EventFragment
 import ru.netology.neworkapplication.ui.job.JobFragment
-import ru.netology.neworkapplication.util.TokenManager
+
 import ru.netology.neworkapplication.viewmodel.WallViewModel
 import javax.inject.Inject
 
@@ -32,11 +35,13 @@ import javax.inject.Inject
 class WallFeedFragment : Fragment() {
     private val viewModel: WallViewModel by activityViewModels()
 
-    @Inject
-    lateinit var tokenManager: TokenManager
 
     @Inject
     lateinit var auth: AppAuth
+
+    @ApplicationContext
+    @Inject
+    lateinit var fragmentContext: Context
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -44,7 +49,7 @@ class WallFeedFragment : Fragment() {
     ): View {
         val binding = FragmentWallBinding.inflate(inflater, container, false)
 
-        val adapter = WallAdapter(tokenManager)
+        val adapter = WallAdapter(fragmentContext, auth)
         viewModel.messageError.observe(
             viewLifecycleOwner,
             Observer { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() })
@@ -57,7 +62,7 @@ class WallFeedFragment : Fragment() {
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
 
-            // binding.swiperefresh.isRefreshing = state.refreshing
+
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
@@ -68,7 +73,7 @@ class WallFeedFragment : Fragment() {
             viewModel.data.collectLatest { adapter.submitData(it) }
         }
 
-//Refreshing SwipeRefreshLayout is displayed only with manual Refresh
+
         lifecycleScope.launchWhenCreated {
             adapter.loadStateFlow.collectLatest {
                 binding.swiperefresh.isRefreshing =
@@ -94,7 +99,7 @@ class WallFeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Load the post you want to edit when the fragment is created
+
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

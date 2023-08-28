@@ -8,8 +8,8 @@ import ru.netology.neworkapplication.entity.PostEntity
 
 @Dao
 interface JobDao {
-    @Query("SELECT * FROM JobEntity WHERE id = :id") // Update table name to PostEntity
-    suspend fun getJob(id: Int): JobEntity?
+    @Query("SELECT * FROM JobEntity WHERE id = :id")
+    suspend fun getJob(id: Long): JobEntity?
 
     @Update
     suspend fun update(job: JobEntity)
@@ -27,7 +27,7 @@ interface JobDao {
     suspend fun insert(jobs: List<JobEntity>)
 
     @Query("DELETE FROM JobEntity WHERE id = :id")
-    suspend fun removeJobById(id: kotlin.Int)
+    suspend fun removeJobById(id: kotlin.Long)
 
     @Query("DELETE FROM JobEntity")
     suspend fun clear()

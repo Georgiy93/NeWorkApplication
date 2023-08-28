@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -11,9 +12,11 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dto.FeedItem
 import ru.netology.neworkapplication.dto.FeedItemJob
@@ -24,7 +27,7 @@ import ru.netology.neworkapplication.model.FeedModelState
 import ru.netology.neworkapplication.repository.PostRepository
 import ru.netology.neworkapplication.repository.job.JobRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
-import ru.netology.neworkapplication.util.TokenManager
+
 import javax.inject.Inject
 
 private val empty = Job(
@@ -37,15 +40,16 @@ private val empty = Job(
     )
 
 @HiltViewModel
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalCoroutinesApi::class)
 class JobViewModel @Inject constructor(
     private val repository: JobRepository,
-    private val tokenManager: TokenManager,
-    auth: AppAuth,
+    @ApplicationContext
+    private val context: Context
+
 ) : ViewModel() {
 
 
-    private val _messageError = SingleLiveEvent<String>()
+    private val _messageError = SingleLiveEvent<String>(context)
     val messageError: LiveData<String>
         get() = _messageError
     private val editedContent = MutableLiveData("")
@@ -59,7 +63,7 @@ class JobViewModel @Inject constructor(
     private val edited = MutableLiveData(empty)
     val editedJob: LiveData<Job>
         get() = edited
-    private val _jobCreated = SingleLiveEvent<Unit>()
+    private val _jobCreated = SingleLiveEvent<Unit>(context)
     val jobCreated: LiveData<Unit>
         get() = _jobCreated
 
@@ -73,12 +77,11 @@ class JobViewModel @Inject constructor(
         try {
 
 
-            val token = tokenManager.getToken()
-            val jobs = repository.getJobAll(token).toList()
+            val jobs = repository.getJobAll().toList()
             _jobs.value = jobs
         } catch (e: Exception) {
 
-            Log.e("JobViewModel", "Error: ", e)
+
             _messageError.value = e.message
         }
     }
@@ -86,16 +89,14 @@ class JobViewModel @Inject constructor(
 
     fun save() {
         edited.value?.let {
-            Log.d("JobViewModel", "Saving job: $it")
             viewModelScope.launch {
                 try {
-                    val token = tokenManager.getToken()
-                    repository.saveJob(it, token)
+
+                    repository.saveJob(it)
                     _jobCreated.value = Unit
-                    val jobs = repository.getJobAll(token).toList()
+                    val jobs = repository.getJobAll().toList()
                     _jobs.value = jobs
                 } catch (e: Exception) {
-                    Log.e("JobViewModel", "Error saving job", e)
                 }
             }
         }
@@ -103,19 +104,18 @@ class JobViewModel @Inject constructor(
     }
 
 
-
-    fun edit(jobId: Int) {
+    fun edit(jobId: Long) {
         viewModelScope.launch {
             try {
-                val token = tokenManager.getToken()
+
                 val job = repository.getJob(jobId)
-                val jobs = repository.getJobAll(token).toList()
+                val jobs = repository.getJobAll().toList()
                 _jobs.value =
                     jobs
                 if (job != null) {
                     edited.value = job
                 } else {
-                    _messageError.value = "Job not found"
+                    _messageError.value = context.getString(R.string.job_not_found)
                 }
             } catch (e: Exception) {
                 _messageError.value = e.message
@@ -165,12 +165,12 @@ class JobViewModel @Inject constructor(
     }
 
 
-    fun removeJobById(id: Int) {
+    fun removeJobById(id: Long) {
         viewModelScope.launch {
             try {
-                val token = tokenManager.getToken()
-                repository.removeJobById(id, token)
-                val jobs = repository.getJobAll(token).toList()
+
+                repository.removeJobById(id)
+                val jobs = repository.getJobAll().toList()
                 _jobs.value = jobs
             } catch (e: Exception) {
 

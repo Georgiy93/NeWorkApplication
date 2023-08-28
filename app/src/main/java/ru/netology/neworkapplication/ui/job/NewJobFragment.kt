@@ -83,8 +83,8 @@ class NewJobFragment : Fragment() {
                     startCalendar.set(Calendar.SECOND, 0)
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
-                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
+                    val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+                    sdf.setTimeZone(TimeZone.getDefault())
                     fragmentBinding?.start?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -104,8 +104,8 @@ class NewJobFragment : Fragment() {
                     finishCalendar.set(Calendar.SECOND, 0)
                     finishCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
-                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
+                    val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+                    sdf.setTimeZone(TimeZone.getDefault())
                     fragmentBinding?.finish?.setText(sdf.format(finishCalendar.time))
                 }
                 TimePickerDialog(
@@ -152,13 +152,13 @@ class NewJobFragment : Fragment() {
                             viewModel.changeStart(it.start.text.toString())
 
                             if (it.finish.text.toString().isEmpty()) {
-                                viewModel.changeFinish(null) // set finish to null if it is empty
+                                viewModel.changeFinish(null)
                             } else {
                                 viewModel.changeFinish(it.finish.text.toString())
                             }
                             if (it.link.text.toString().isEmpty()) {
 
-                                viewModel.changeLink(null) // set finish to null if it is empty
+                                viewModel.changeLink(null)
                             } else {
                                 viewModel.changeLink(it.link.text.toString())
                             }

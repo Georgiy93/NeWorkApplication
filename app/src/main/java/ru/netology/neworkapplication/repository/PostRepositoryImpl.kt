@@ -11,6 +11,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dao.PostDao
 import ru.netology.neworkapplication.dto.*
 
@@ -23,7 +24,7 @@ import ru.netology.neworkapplication.error.AppError
 import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
 import ru.netology.neworkapplication.model.MediaModel
-import ru.netology.neworkapplication.util.TokenManager
+
 
 
 import java.io.IOException
@@ -36,7 +37,7 @@ class PostRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
-    private val tokenManager: TokenManager,
+    private val appAuth: AppAuth,
 
     ) : PostRepository {
     @OptIn(ExperimentalPagingApi::class)
@@ -49,7 +50,7 @@ class PostRepositoryImpl @Inject constructor(
                 postDao = postDao,
                 postRemoteKeyDao = postRemoteKeyDao,
                 appDb = appDb,
-                tokenManager = tokenManager
+
             )
         ).flow
             .map { pagingData ->
@@ -60,10 +61,10 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun getAll() {
         try {
-            val token = tokenManager.getToken() // Get the token
 
-            val response = apiService.getAll(token)
-            Log.d("apiService.getAll", "Response: ${response.code()} - ${response.message()}")
+
+            val response = apiService.getAll()
+
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -83,9 +84,8 @@ class PostRepositoryImpl @Inject constructor(
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(120_000L)
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
-            val response = apiService.getNewer(authHeader, id)
+
+            val response = apiService.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -100,10 +100,9 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun save(post: Post) {
         try {
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
-            val response = apiService.save(authHeader, post)
-            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+
+            val response = apiService.save(post)
+
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -120,8 +119,7 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun saveWithAttachment(post: Post, upload: MediaModel) {
         try {
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
+
 
             val media = upload(upload)
 
@@ -129,8 +127,8 @@ class PostRepositoryImpl @Inject constructor(
             val postWithAttachment =
                 post.copy(attachment = Attachment(media.url, AttachmentType.IMAGE))
 
-            val response = apiService.save(authHeader, postWithAttachment ?: post)
-            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+            val response = apiService.save(postWithAttachment ?: post)
+
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -146,9 +144,9 @@ class PostRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun removeById(id: Int) {
-        val token = tokenManager.getToken()
-        val response = apiService.removeById(token, id.toString())
+    override suspend fun removeById(id: Long) {
+
+        val response = apiService.removeById(id.toString())
         if (!response.isSuccessful) {
             throw HttpException(response)
         }
@@ -157,13 +155,13 @@ class PostRepositoryImpl @Inject constructor(
     }
 
     override suspend fun likeById(post: Post) {
-        val token = tokenManager.getToken()
+
         val likedByMeValue = post.likedByMe
         val postResponse = apiService.let {
             if (likedByMeValue)
-                it.dislikeById(token, post.id.toString())
+                it.dislikeById(post.id.toString())
             else
-                it.likeById(token, post.id.toString())
+                it.likeById(post.id.toString())
 
         }
         if (!postResponse.isSuccessful) {
@@ -178,12 +176,11 @@ class PostRepositoryImpl @Inject constructor(
 
     }
 
-    override suspend fun getPost(id: Int): Post {
+    override suspend fun getPost(id: Long): Post {
         try {
-            val token = tokenManager.getToken() // Get the token
-            val authHeader = token
-            val response = apiService.getPost(authHeader, id)
-            Log.d("PostRepository", "Response: ${response.code()} - ${response.message()}")
+
+            val response = apiService.getPost(id)
+
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -199,15 +196,14 @@ class PostRepositoryImpl @Inject constructor(
 
     private suspend fun upload(media: MediaModel): Media {
         try {
-            val token = tokenManager.getToken()
+
 
             val part = MultipartBody.Part.createFormData(
                 "file",
                 media.file.name,
                 media.file.asRequestBody()
             )
-            val response = apiService.upload(token, part)
-            Log.d("media", "Response: ${response.code()} - ${response.message()}")
+            val response = apiService.upload(part)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

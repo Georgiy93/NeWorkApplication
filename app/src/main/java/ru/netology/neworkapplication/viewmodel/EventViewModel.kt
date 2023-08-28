@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -10,11 +11,13 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.dto.FeedItemEvent
@@ -25,7 +28,7 @@ import ru.netology.neworkapplication.model.MediaModel
 import ru.netology.neworkapplication.repository.events.EventRepository
 import ru.netology.neworkapplication.repository.job.JobRepository
 import ru.netology.neworkapplication.util.SingleLiveEvent
-import ru.netology.neworkapplication.util.TokenManager
+
 import java.io.File
 import javax.inject.Inject
 
@@ -49,19 +52,21 @@ private val empty = Event(
 
 
 @HiltViewModel
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalCoroutinesApi::class)
 class EventViewModel @Inject constructor(
     private val repository: EventRepository,
     private val repositoryJob: JobRepository,
-    private val tokenManager: TokenManager,
-    auth: AppAuth,
+    @ApplicationContext
+    private val context: Context,
+    private val auth: AppAuth,
 ) : ViewModel() {
+
     private val cached = repository.data.cachedIn(viewModelScope)
     private val creatingEvent = MutableLiveData<Event?>(null)
     private val _imageUri = MutableLiveData<Uri?>()
     val imageUri: LiveData<Uri?>
         get() = _imageUri
-    private val _messageError = SingleLiveEvent<String>()
+    private val _messageError = SingleLiveEvent<String>(context)
     val messageError: LiveData<String>
         get() = _messageError
 
@@ -71,7 +76,7 @@ class EventViewModel @Inject constructor(
             cached.map { pagingData ->
                 pagingData.map { event ->
                     if (event is Event) {
-                        event.copy(ownedByMe = event.authorId == myId)
+                        event.copy(ownedByMe = event.authorId == myId.toLong())
                     } else {
                         event
                     }
@@ -89,7 +94,7 @@ class EventViewModel @Inject constructor(
     private val eventWithParticipant = MutableLiveData(empty)
     val editedEventWithParticipant: LiveData<Event>
         get() = eventWithParticipant
-    private val _eventCreated = SingleLiveEvent<Unit>()
+    private val _eventCreated = SingleLiveEvent<Unit>(context)
     val eventCreated: LiveData<Unit>
         get() = _eventCreated
     private val _media = MutableLiveData<MediaModel?>(null)
@@ -122,16 +127,14 @@ class EventViewModel @Inject constructor(
     }
 
 
-
-
-    fun editEvent(eventId: Int) {
+    fun editEvent(eventId: Long) {
         viewModelScope.launch {
             try {
-                val event = repository.getEvent(eventId)  // Get post by id from repository
+                val event = repository.getEvent(eventId)
                 if (event != null) {
                     edited.value = event
                 } else {
-                    _messageError.value = "Event not found"
+                    _messageError.value = context.getString(R.string.event_not_found)
                 }
             } catch (e: Exception) {
                 _messageError.value = e.message
@@ -188,7 +191,7 @@ class EventViewModel @Inject constructor(
 
     }
 
-    fun removeEventById(id: Int) {
+    fun removeEventById(id: Long) {
         viewModelScope.launch {
             try {
                 repository.removeEventById(id)
@@ -200,7 +203,7 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun getParticipantNamesForEvent(eventId: Int): List<String> {
+    fun getParticipantNamesForEvent(eventId: Long): List<String> {
 
         val event = edited.value
         if (event?.id == eventId && event.users != null) {
@@ -218,23 +221,23 @@ class EventViewModel @Inject constructor(
                 val user = userList.find { it.login == login }
 
                 if (user != null) {
-                    val userIdInt = user.id.toInt()
+                    val userIdInt = user.id.toLong()
                     val currentEvent = edited.value ?: empty
                     val currentParticipants = edited.value?.speakerIds ?: emptyList()
                     if (!currentParticipants.contains(userIdInt)) {
                         val updatedParticipants = currentParticipants + userIdInt
                         val userPreview = UserPreview(user.name, user.avatar)
                         val updatedUsersMap = currentEvent.users?.toMutableMap() ?: mutableMapOf()
-                        updatedUsersMap[user.id.toInt()] = userPreview
+                        updatedUsersMap[user.id.toLong()] = userPreview
                         edited.value = currentEvent.copy(
                             speakerIds = updatedParticipants,
                             users = updatedUsersMap
                         )
                     } else {
-                        _messageError.value = "User is already a participant"
+                        _messageError.value = context.getString(R.string.already_participant)
                     }
                 } else {
-                    _messageError.value = "User not found"
+                    _messageError.value = context.getString(R.string.user_not_found)
                 }
             } catch (e: Exception) {
                 _messageError.value = e.message
@@ -249,11 +252,11 @@ class EventViewModel @Inject constructor(
                 val user = userList.find { it.name == name }
 
                 if (user == null) {
-                    _messageError.value = "User not found"
+                    _messageError.value = context.getString(R.string.user_not_found)
                     return@launch
                 }
 
-                val userIdInt = user.id.toInt()
+                val userIdInt = user.id.toLong()
                 val currentEvent = edited.value ?: return@launch
 
                 if (currentEvent.users.containsKey(userIdInt)) {
@@ -267,10 +270,10 @@ class EventViewModel @Inject constructor(
                         users = updatedUsersMap
                     )
                 } else {
-                    _messageError.value = "User is not a participant"
+                    _messageError.value = context.getString(R.string.not_participant)
                 }
             } catch (e: Exception) {
-                _messageError.value = e.message ?: "An error occurred"
+                _messageError.value = e.message ?: context.getString(R.string.error_occurred)
             }
         }
     }
@@ -281,8 +284,8 @@ class EventViewModel @Inject constructor(
         edited.value?.let { currentEvent ->
             viewModelScope.launch {
                 try {
-                    val token = tokenManager.getToken()
-                    val jobs = repositoryJob.getJobAll(token)
+
+                    val jobs = repositoryJob.getJobAll()
                     val lastJob = jobs.firstOrNull()
 
                     val updatedEvent = if (lastJob != null) {

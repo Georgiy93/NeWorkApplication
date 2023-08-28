@@ -7,7 +7,7 @@ import ru.netology.neworkapplication.entity.PostEntity
 
 @Dao
 interface PostDao {
-    @Query("SELECT * FROM PostEntity WHERE id = :id") // Update table name to PostEntity
+    @Query("SELECT * FROM PostEntity WHERE id = :id")
     suspend fun getPostById(id: Int): PostEntity?
 
     @Update
@@ -32,7 +32,7 @@ interface PostDao {
     suspend fun insert(posts: List<PostEntity>)
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
-    suspend fun removeById(id: Int)
+    suspend fun removeById(id: Long)
 
     @Query("DELETE FROM PostEntity")
     suspend fun clear()

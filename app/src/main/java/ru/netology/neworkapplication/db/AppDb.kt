@@ -13,10 +13,10 @@ import ru.netology.neworkapplication.entity.*
 @Database(
     entities = [PostEntity::class, JobEntity::class, EventEntity::class, JobRemoteKeyEntity::class,
         PostRemoteKeyEntity::class, EventRemoteKeyEntity::class],
-    version = 27, // Increment the version number here
+    version = 27,
     exportSchema = false
 )
-@TypeConverters(TypeEventConverters::class, UserConvecters::class, ListConverter::class)
+@TypeConverters(UserConvecters::class, ListConverter::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun postDao(): PostDao
     abstract fun postRemoteKeyDao(): PostRemoteKeyDao

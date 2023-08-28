@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.ActivitySignupBinding
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
 import java.io.InputStream
@@ -29,7 +30,7 @@ class SignUpActivity : AppCompatActivity() {
 
         getImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             avatarUrl = uri
-            binding.avatarImageView.setImageURI(uri) // this line updates the avatar in the ImageView
+            binding.avatarImageView.setImageURI(uri)
         }
         binding.apply {
             chooseAvatar.setOnClickListener {
@@ -50,7 +51,11 @@ class SignUpActivity : AppCompatActivity() {
         viewModel.registrationResult.observe(this, { response ->
             if (response.responseBody != null) {
 
-                Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    getString(R.string.registration_successful),
+                    Toast.LENGTH_SHORT
+                ).show()
                 val intent = Intent(this@SignUpActivity, AuthActivity::class.java)
                 startActivity(intent)
                 finish()
@@ -58,7 +63,7 @@ class SignUpActivity : AppCompatActivity() {
 
                 Toast.makeText(
                     this,
-                    "Registration failed. Server response code: ${response.statusCode}, error message: ${response.errorMessage}",
+                    getString(R.string.registration_failed),
                     Toast.LENGTH_SHORT
                 ).show()
             }

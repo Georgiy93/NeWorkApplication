@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +12,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.netology.neworkapplication.BuildConfig
 import ru.netology.neworkapplication.R
+import ru.netology.neworkapplication.auth.AppAuth
 
 import ru.netology.neworkapplication.databinding.CardPostBinding
 import ru.netology.neworkapplication.dto.FeedItem
 import ru.netology.neworkapplication.dto.Job
 import ru.netology.neworkapplication.dto.Post
-import ru.netology.neworkapplication.util.TokenManager
+
 import ru.netology.neworkapplication.view.loadCircleCrop
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,14 +34,14 @@ interface OnInteractionListener {
 
 class PostsAdapter(
     private val onInteractionListener: OnInteractionListener,
-    private val tokenManager: TokenManager,
-
-    ) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(PostDiffCallback()) {
+    private val appAuth: AppAuth,
+    private val context: Context,
+) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(PostDiffCallback()) {
     override fun getItemViewType(position: Int): Int =
         when (getItem(position)) {
 
             is Post -> R.layout.card_post
-            null -> error("unknown item type")
+            null -> error(R.string.unknown_item_type)
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -47,10 +49,10 @@ class PostsAdapter(
             R.layout.card_post -> {
                 val binding =
                     CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                return PostViewHolder(binding, onInteractionListener, tokenManager)
+                return PostViewHolder(context, binding, onInteractionListener, appAuth)
             }
 
-            else -> error("unknown item type: $viewType")
+            else -> error(context.getString(R.string.unknown_item_type_error, viewType))
         }
 
     }
@@ -59,7 +61,7 @@ class PostsAdapter(
         when (val item = getItem(position)) {
 
             is Post -> (holder as? PostViewHolder)?.bind(item)
-            null -> error("unknown item type")
+            null -> error(R.string.unknown_item_type)
         }
 
     }
@@ -79,11 +81,12 @@ class PostDiffCallback : DiffUtil.ItemCallback<FeedItem>() {
 }
 
 class PostViewHolder(
+    private val context: Context,
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
-    private val tokenManager: TokenManager,
+    private val appAuth: AppAuth,
 
-) : RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(post: Post) {
 
@@ -92,20 +95,21 @@ class PostViewHolder(
             author.text = post.author
 
             val originalFormat =
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale("ru", "RU"))
-            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("ru", "RU"))
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
+            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
             originalFormat.timeZone =
-                TimeZone.getTimeZone("Europe/Moscow") // if the original time is in UTC
+                TimeZone.getDefault()
             val date = originalFormat.parse(post.published)
 
-            published.text = if (date != null) targetFormat.format(date) else "Unknown date"
+            published.text =
+                if (date != null) targetFormat.format(date) else context.getString(R.string.unknown_date)
 
             authorJob.text = post.authorJob
             content.text = post.content
             post.authorAvatar?.let {
                 Glide.with(itemView.context)
                     .load(it)
-                    .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                    .placeholder(R.drawable.baseline_upload_file_24)
                     .error(R.drawable.baseline_error_outline_24)
 
                     .into(avatar)
@@ -118,14 +122,14 @@ class PostViewHolder(
                 post.attachment?.url?.let {
                     Glide.with(itemView.context)
                         .load(it)
-                        .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                        .placeholder(R.drawable.baseline_upload_file_24)
                         .error(R.drawable.baseline_error_outline_24)
 
                         .into(image)
                 }
             }
 
-            menu.visibility = if (post.authorId == tokenManager.getId())
+            menu.visibility = if (post.authorId == appAuth.getId())
                 View.VISIBLE else View.INVISIBLE
 
             menu.setOnClickListener {
@@ -140,7 +144,7 @@ class PostViewHolder(
                                 true
                             }
                             R.id.edit -> {
-                                if (post.authorId == tokenManager.getId()) {
+                                if (post.authorId == appAuth.getId()) {
                                     onInteractionListener.onEditNavigate(post)
                                 }
 

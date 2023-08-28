@@ -1,24 +1,30 @@
 package ru.netology.neworkapplication.adapter.events
 
+
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+
 import ru.netology.neworkapplication.R
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.CardEventBinding
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.dto.FeedItemEvent
-import ru.netology.neworkapplication.util.TokenManager
+
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 interface OnInteractionListenerEvent {
 
@@ -30,15 +36,16 @@ interface OnInteractionListenerEvent {
 }
 
 class EventsAdapter(
+    private val context: Context,
     private val onInteractionListener: OnInteractionListenerEvent,
-    private val tokenManager: TokenManager
+    private val appAuth: AppAuth
 
 ) : PagingDataAdapter<FeedItemEvent, RecyclerView.ViewHolder>(EventsDiffCallback()) {
     override fun getItemViewType(position: Int): Int =
         when (getItem(position)) {
 
             is Event -> R.layout.card_event
-            null -> error("unknown item type")
+            null -> error(R.string.unknown_item_type)
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -46,19 +53,18 @@ class EventsAdapter(
             R.layout.card_event -> {
                 val binding =
                     CardEventBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                return EventsViewHolder(binding, onInteractionListener, tokenManager)
+                return EventsViewHolder(context, binding, onInteractionListener, appAuth)
             }
 
-            else -> error("unknown item type: $viewType")
+            else -> error(context.getString(R.string.unknown_item_type_error, viewType))
         }
-
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
 
             is Event -> (holder as? EventsViewHolder)?.bind(item)
-            null -> error("unknown item type")
+            null -> error(R.string.unknown_item_type)
         }
 
     }
@@ -79,10 +85,10 @@ class EventsDiffCallback : DiffUtil.ItemCallback<FeedItemEvent>() {
 }
 
 class EventsViewHolder(
-
+    private val context: Context,
     private val binding: CardEventBinding,
     private val onInteractionListener: OnInteractionListenerEvent,
-    private val tokenManager: TokenManager
+    private val appAuth: AppAuth
 ) : RecyclerView.ViewHolder(binding.root) {
     fun removeMicroseconds(date: String): String {
         val zIdx = date.lastIndexOf("Z")
@@ -101,32 +107,34 @@ class EventsViewHolder(
             author.text = event.author
 
             val originalFormatWithoutMilliseconds =
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale("ru", "RU"))
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
             val originalFormatWithMilliseconds =
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale("ru", "RU"))
-            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("ru", "RU"))
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
             originalFormatWithoutMilliseconds.timeZone =
-                TimeZone.getTimeZone("Europe/Moscow")  // if the original time is in UTC
+                TimeZone.getDefault()
             originalFormatWithMilliseconds.timeZone =
-                TimeZone.getTimeZone("Europe/Moscow")  // if the original time is in UTC
+                TimeZone.getDefault()
 
             var date = try {
                 originalFormatWithMilliseconds.parse(removeMicroseconds(event.published))
             } catch (e: ParseException) {
                 originalFormatWithoutMilliseconds.parse(event.published)
             }
-            published.text = if (date != null) targetFormat.format(date) else "Unknown date"
+            published.text = if (date != null) targetFormat.format(date)
+            else context.getString(R.string.unknown_date)
 
             date = try {
                 originalFormatWithMilliseconds.parse(removeMicroseconds(event.datetime))
             } catch (e: ParseException) {
                 originalFormatWithoutMilliseconds.parse(event.datetime)
             }
-            datetime.text = if (date != null) targetFormat.format(date) else "Unknown date"
+            datetime.text = if (date != null) targetFormat.format(date) else
+                context.getString(R.string.unknown_date)
 
 
 //
-            datetimeTitle.text = "Дата проведения события"
+            datetimeTitle.text = context.getString(R.string.datetime_title)
             authorJob.text = event.authorJob
             content.text = event.content
             type.text = event.type
@@ -143,7 +151,7 @@ class EventsViewHolder(
             event.authorAvatar?.let {
                 Glide.with(itemView.context)
                     .load(it)
-                    .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                    .placeholder(R.drawable.baseline_upload_file_24)
                     .error(R.drawable.baseline_error_outline_24)
                     .into(avatar)
             }
@@ -154,7 +162,7 @@ class EventsViewHolder(
                 event.attachment?.url?.let {
                     Glide.with(itemView.context)
                         .load(it)
-                        .placeholder(R.drawable.baseline_upload_file_24) // замените на ваш ресурс
+                        .placeholder(R.drawable.baseline_upload_file_24)
                         .error(R.drawable.baseline_error_outline_24)
 
                         .into(image)
@@ -162,7 +170,7 @@ class EventsViewHolder(
             }
 
 
-            menu.visibility = if (event.authorId == tokenManager.getId())
+            menu.visibility = if (event.authorId == appAuth.getId())
                 View.VISIBLE else View.INVISIBLE
 
             menu.setOnClickListener {
@@ -177,7 +185,7 @@ class EventsViewHolder(
                                 true
                             }
                             R.id.edit -> {
-                                if (event.authorId == tokenManager.getId()) {
+                                if (event.authorId == appAuth.getId()) {
                                     onInteractionListener.onEditNavigate(event)
                                 }
 
@@ -195,7 +203,7 @@ class EventsViewHolder(
 
                 onInteractionListener.onLike(event)
             }
-            val participantsAdapter = ParticipantsAdapter()
+            val participantsAdapter = ParticipantsAdapter(context)
             val participants = event.users.values.toList()
 
             participantsAdapter.setParticipants(participants)

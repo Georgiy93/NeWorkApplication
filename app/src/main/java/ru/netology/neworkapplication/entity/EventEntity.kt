@@ -9,8 +9,8 @@ import ru.netology.neworkapplication.dto.*
 
 data class EventEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val authorId: Int,
+    val id: Long,
+    val authorId: Long,
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,
@@ -21,20 +21,20 @@ data class EventEntity(
     val type: String,
 
 
-    val likeOwnerIds: List<Int>? = emptyList(),
+    val likeOwnerIds: List<Long>? = emptyList(),
     val likedByMe: Boolean,
 
 
-    val speakerIds: List<Int>? = emptyList(),
+    val speakerIds: List<Long>? = emptyList(),
 
 
-    val participantsIds: List<Int>? = emptyList(),
+    val participantsIds: List<Long>? = emptyList(),
 
     val participatedByMe: Boolean,
 
     val link: String?,
     val ownedByMe: Boolean,
-    val users: Map<Int, UserPreview> = emptyMap(),
+    val users: Map<Long, UserPreview> = emptyMap(),
 
 //    @Embedded
 //    var users: UserPreview?,

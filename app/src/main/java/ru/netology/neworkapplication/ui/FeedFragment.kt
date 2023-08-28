@@ -2,6 +2,7 @@ package ru.netology.neworkapplication.ui
 
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -15,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.neworkapplication.adapter.OnInteractionListener
@@ -27,6 +29,7 @@ import ru.netology.neworkapplication.adapter.PostLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.events.EventLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.events.EventsAdapter
 import ru.netology.neworkapplication.auth.AppAuth
+
 import ru.netology.neworkapplication.databinding.FragmentFeedBinding
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.ui.event.EditEventFragment
@@ -35,7 +38,7 @@ import ru.netology.neworkapplication.ui.event.NewEventFragment
 import ru.netology.neworkapplication.ui.job.JobFragment
 import ru.netology.neworkapplication.ui.wall.WallFeedFragment
 
-import ru.netology.neworkapplication.util.TokenManager
+
 import ru.netology.neworkapplication.viewmodel.EventViewModel
 
 
@@ -44,26 +47,23 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
+
+    companion object {
+        const val KEY_CONTENT = "content"
+        const val KEY_ID = "id"
+    }
+
     private val postViewModel: PostViewModel by activityViewModels()
-
-
-    @Inject
-    lateinit var tokenManager: TokenManager
 
     @Inject
     lateinit var auth: AppAuth
 
-    lateinit var postAdapter: PostsAdapter
+    @ApplicationContext
+    @Inject
+    lateinit var fragmentContext: Context
 
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val binding = FragmentFeedBinding.inflate(inflater, container, false)
-
-        postAdapter = PostsAdapter(object : OnInteractionListener {
+    private val postAdapter: PostsAdapter by lazy {
+        PostsAdapter(object : OnInteractionListener {
 
             override fun onEdit(post: Post) {
                 postViewModel.edit(post.id)
@@ -81,24 +81,28 @@ class FeedFragment : Fragment() {
                 parentFragmentManager.commit {
                     replace(R.id.container, EditPostFragment().apply {
                         arguments = Bundle().apply {
-                            putString("content", post.content)
-
-                            putInt("id", post.id)
+                            putString(KEY_CONTENT, post.content)
+                            putLong(KEY_ID, post.id)
                         }
                     })
                     addToBackStack(null)
                 }
             }
 
-        }, tokenManager)
+        }, auth, fragmentContext)
+    }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentFeedBinding.inflate(inflater, container, false)
 
-        val adapter =
-            postAdapter.withLoadStateHeaderAndFooter(
-                header = PostLoadingStateAdapter { postAdapter.retry() },
-                footer = PostLoadingStateAdapter { postAdapter.retry() }
-            )
-
+        val adapter = postAdapter.withLoadStateHeaderAndFooter(
+            header = PostLoadingStateAdapter { postAdapter.retry() },
+            footer = PostLoadingStateAdapter { postAdapter.retry() }
+        )
 
         binding.list.adapter = adapter
         postViewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -114,33 +118,22 @@ class FeedFragment : Fragment() {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
 
-
-
-
-
-
         lifecycleScope.launchWhenCreated {
             postViewModel.data.collectLatest { pagingData ->
                 postAdapter.submitData(pagingData)
             }
         }
 
-
-
-
-
-
         binding.swiperefresh.setOnRefreshListener {
             postAdapter.refresh()
-
         }
+
         lifecycleScope.launchWhenCreated {
             postViewModel.data.collectLatest { pagingData ->
                 postAdapter.submitData(pagingData)
                 binding.swiperefresh.isRefreshing = false
             }
         }
-
 
         binding.fab.setOnClickListener {
             parentFragmentManager.commit {
@@ -149,26 +142,17 @@ class FeedFragment : Fragment() {
             }
         }
 
-
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         AlertDialog.Builder(requireContext())
-            .setTitle("Добро пожаловать в NETAPP!")
-            .setMessage(
-
-                "Cверху расположены кнопки:\n" +
-                        "1ая для просмотра событий, \n" +
-                        "2ая для просмотра вашего место работы, \n" +
-                        "3ия для просмотра ваших постов, \n" +
-                        "4ая это выход из вашего аккаунта \n"
-            )
-            .setPositiveButton("Понятно", null)
+            .setTitle(getString(R.string.main_title))
+            .setMessage(getString(R.string.main_description))
+            .setPositiveButton(getString(R.string.understand), null)
             .show()
-
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -209,6 +193,4 @@ class FeedFragment : Fragment() {
 
         }, viewLifecycleOwner)
     }
-
-
 }

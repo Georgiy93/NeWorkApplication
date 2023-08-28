@@ -30,14 +30,16 @@ import java.io.InputStream
 class EditPostFragment : Fragment() {
 
     companion object {
+        const val KEY_ID = "id"
+        const val KEY_CONTENT = "content"
+        const val KEY_JOB = "job"
+
         var Bundle.textArg: String? by StringArg
     }
 
     private val viewModel: PostViewModel by activityViewModels()
-
-
     private var fragmentBinding: FragmentNewPostBinding? = null
-    private var postId: Int = 0
+    private var postId: Long = 0
     private var postContent: String = ""
     private var authorJob: String = ""
 
@@ -53,14 +55,12 @@ class EditPostFragment : Fragment() {
         )
         fragmentBinding = binding
 
-        postId = arguments?.getInt("id") ?: 0
-        postContent = arguments?.getString("content") ?: ""
-        authorJob = arguments?.getString("job") ?: ""
+        postId = arguments?.getLong(KEY_ID) ?: 0
+        postContent = arguments?.getString(KEY_CONTENT) ?: ""
+        authorJob = arguments?.getString(KEY_JOB) ?: ""
 
         binding.edit.setText(postContent)
         binding.edit.requestFocus()
-
-
 
         binding.clear.visibility = View.GONE
         val photoLauncher =
@@ -80,14 +80,12 @@ class EditPostFragment : Fragment() {
                 }
             }
 
-
         binding.pickPhoto.setOnClickListener {
             ImagePicker.with(this)
                 .galleryOnly()
                 .crop()
                 .compress(2048)
                 .createIntent(photoLauncher::launch)
-
         }
         viewModel.media.observe(viewLifecycleOwner) { media ->
             if (media == null) {
@@ -96,7 +94,6 @@ class EditPostFragment : Fragment() {
             }
             binding.photoContainer.isVisible = true
             binding.photo.setImageURI(media.uri)
-
         }
         binding.clear.visibility = View.VISIBLE
 
@@ -110,7 +107,6 @@ class EditPostFragment : Fragment() {
                 when (menuItem.itemId) {
                     R.id.save -> {
                         fragmentBinding?.let {
-
                             viewModel.changeContent(it.edit.text.toString())
                             viewModel.save()
                             AndroidUtils.hideKeyboard(requireView())
@@ -136,3 +132,4 @@ class EditPostFragment : Fragment() {
         super.onDestroyView()
     }
 }
+

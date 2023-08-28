@@ -14,12 +14,12 @@ interface EventRepository {
     suspend fun saveEvent(event: Event): Event
     suspend fun saveEventWithAttachment(event: Event, media: MediaModel): Event
 
-    suspend fun getEvent(id: Int): Event
-    suspend fun removeEventById(id: Int)
+    suspend fun getEvent(id: Long): Event
+    suspend fun removeEventById(id: Long)
     suspend fun likeEventById(event: Event)
 
     suspend fun userAll(): List<LoginRequest>
-    suspend fun removeParticipantById(id: Int): Event
+    suspend fun removeParticipantById(id: Long): Event
 
 }
 

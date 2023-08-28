@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.adapter.events
 
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +12,8 @@ import com.bumptech.glide.Glide
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.dto.UserPreview
 
-class ParticipantsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ParticipantsAdapter(private val context: Context) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
         private const val TYPE_HEADER = 0
@@ -42,9 +44,14 @@ class ParticipantsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         R.layout.item_participant,
                         parent,
                         false
-                    ) // Измените на ваш layout для участника
+                    )
             )
-            else -> throw IllegalArgumentException("Unknown viewType: $viewType")
+            else -> throw IllegalArgumentException(
+                context.getString(
+                    R.string.unknown_item_type_error,
+                    viewType
+                )
+            )
         }
     }
 
@@ -56,7 +63,7 @@ class ParticipantsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 .load(participant.avatar)
                 .into(holder.avatarImageView)
         } else if (holder is HeaderViewHolder) {
-            holder.headerText.text = "Participants"
+            holder.headerText.text = context.getString(R.string.participants_header)
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.ActivityAuthBinding
 import ru.netology.neworkapplication.dto.RequestLogin
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
@@ -35,7 +36,7 @@ class AuthActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(
                         this@AuthActivity,
-                        "Please fill out all fields",
+                        getString(R.string.fill_fields),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -52,7 +53,7 @@ class AuthActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
             } else {
-                Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show()
             }
         })
 

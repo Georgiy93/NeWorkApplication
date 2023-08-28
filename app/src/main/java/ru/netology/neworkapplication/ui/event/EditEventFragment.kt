@@ -34,8 +34,13 @@ import java.util.*
 class EditEventFragment : Fragment() {
 
     companion object {
-        var Bundle.textArg: String? by StringArg
+        const val KEY_ID = "id"
+        const val KEY_CONTENT = "content"
+        const val KEY_LINK = "link"
+        const val KEY_TYPE = "type"
+        const val KEY_DATE = "date"
 
+        var Bundle.textArg: String? by StringArg
 
         fun newInstance(
             id: Int,
@@ -46,15 +51,13 @@ class EditEventFragment : Fragment() {
         ): EditEventFragment {
             val fragment = EditEventFragment()
 
-
             val args = Bundle().apply {
-                putInt("id", id)
-                putString("content", content)
-                putString("link", link)
-                putString("type", type)
-                putString("date", date)
+                putInt(KEY_ID, id)
+                putString(KEY_CONTENT, content)
+                putString(KEY_LINK, link)
+                putString(KEY_TYPE, type)
+                putString(KEY_DATE, date)
             }
-
 
             fragment.arguments = args
             return fragment
@@ -65,7 +68,7 @@ class EditEventFragment : Fragment() {
     private var participantsAdapter: ArrayAdapter<String>? = null
     private val participantsList = mutableListOf<String>()
     private var fragmentBinding: FragmentNewEventBinding? = null
-    private var eventId: Int = 0
+    private var eventId: Long = 0
     private var eventContent: String = ""
     private var eventType: String = ""
     private var eventLink: String = ""
@@ -82,11 +85,11 @@ class EditEventFragment : Fragment() {
         )
         fragmentBinding = binding
 
-        eventId = arguments?.getInt("id") ?: 0
-        eventContent = arguments?.getString("content") ?: ""
-        eventLink = arguments?.getString("link") ?: ""
-        eventType = arguments?.getString("type") ?: ""
-        dateTime = arguments?.getString("date") ?: ""
+        eventId = arguments?.getLong(KEY_ID) ?: 0
+        eventContent = arguments?.getString(KEY_CONTENT) ?: ""
+        eventLink = arguments?.getString(KEY_LINK) ?: ""
+        eventType = arguments?.getString(KEY_TYPE) ?: ""
+        dateTime = arguments?.getString(KEY_DATE) ?: ""
         binding.edit.setText(eventContent)
         binding.link.setText(eventLink)
         binding.type.setText(eventType)
@@ -98,13 +101,13 @@ class EditEventFragment : Fragment() {
             val eventTypeNames = eventTypes.map { it.toString() }.toTypedArray()
             // create a dialog
             AlertDialog.Builder(requireContext())
-                .setTitle("Event Type")
+                .setTitle(R.string.event_type)
                 .setSingleChoiceItems(eventTypeNames, -1) { dialog, which ->
                     val eventType = eventTypes[which]
                     fragmentBinding?.type?.setText(eventType.toString())
                     dialog.dismiss()
                 }
-                .setNegativeButton("Cancel") { dialog, _ ->
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.cancel()
                 }
                 .show()
@@ -135,8 +138,8 @@ class EditEventFragment : Fragment() {
                     startCalendar.set(Calendar.SECOND, 0)
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    val sdf = SimpleDateFormat(myFormat, Locale("ru", "RU"))
-                    sdf.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"))
+                    val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+                    sdf.setTimeZone(TimeZone.getDefault())
                     fragmentBinding?.datetime?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -247,7 +250,7 @@ class EditEventFragment : Fragment() {
             } else {
                 Snackbar.make(
                     binding.root,
-                    "Please enter a participant login",
+                    getString(R.string.participant_login),
                     Snackbar.LENGTH_SHORT
                 ).show()
             }
@@ -257,13 +260,13 @@ class EditEventFragment : Fragment() {
         listView.setOnItemLongClickListener { _, _, position, _ ->
             val participant = participantsList[position]
             AlertDialog.Builder(requireContext())
-                .setMessage("Do you want to remove $participant?")
-                .setPositiveButton("Yes") { _, _ ->
+                .setMessage(getString(R.string.remove_participant_confirmation, participant))
+                .setPositiveButton(R.string.yes) { _, _ ->
                     viewModel.removeParticipantByName(participant)
                     participantsList.removeAt(position)
                     participantsAdapter?.notifyDataSetChanged()
                 }
-                .setNegativeButton("No", null)
+                .setNegativeButton(R.string.no, null)
                 .show()
             true
         }
@@ -281,14 +284,11 @@ class EditEventFragment : Fragment() {
 
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Как пользоваться")
-            .setMessage(
-                "Здесь вы можете создать новое событие. " +
-                        "В 1ой строке введите дату события. Далее нажмите и выберите тип события. " +
-                        "Далее напишите описание события. " + "При необходимости добавте участников, ссылку и картинку." +
-                        " Для удаления участника зажмите его имя или логин, после подтвердите удаление."
+            .setTitle(
+                getString(R.string.event_instruction_title)
             )
-            .setPositiveButton("Понятно", null)
+            .setMessage(getString(R.string.event_creation_instructions))
+            .setPositiveButton(R.string.understand, null)
             .show()
     }
 }

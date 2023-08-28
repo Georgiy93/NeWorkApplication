@@ -9,9 +9,9 @@ import ru.netology.neworkapplication.dto.Job
 
 interface JobRepository {
     val data: Flow<PagingData<FeedItemJob>>
-    suspend fun getJobAll(token: String): List<Job>
-    suspend fun saveJob(job: Job, token: String)
-    suspend fun getJob(id: Int): Job
-    suspend fun removeJobById(id: Int, token: String)
+    suspend fun getJobAll(): List<Job>
+    suspend fun saveJob(job: Job)
+    suspend fun getJob(id: Long): Job
+    suspend fun removeJobById(id: Long)
 }
 

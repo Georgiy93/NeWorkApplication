@@ -11,8 +11,8 @@ import ru.netology.neworkapplication.dto.Post
 @Entity
 data class PostEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val authorId: Int,
+    val id: Long,
+    val authorId: Long,
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,

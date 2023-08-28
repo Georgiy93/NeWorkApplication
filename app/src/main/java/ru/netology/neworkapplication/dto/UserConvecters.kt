@@ -7,15 +7,15 @@ import com.google.gson.reflect.TypeToken
 
 class UserConvecters {
     @TypeConverter
-    fun fromUserPreviewMap(value: Map<Int, UserPreview>): String {
+    fun fromUserPreviewMap(value: Map<Long, UserPreview>): String {
         val gson = Gson()
         return gson.toJson(value)
     }
 
     @TypeConverter
-    fun toUserPreviewMap(value: String): Map<Int, UserPreview> {
+    fun toUserPreviewMap(value: String): Map<Long, UserPreview> {
         val gson = Gson()
-        val type = object : TypeToken<Map<Int, UserPreview>>() {}.type
+        val type = object : TypeToken<Map<Long, UserPreview>>() {}.type
         return gson.fromJson(value, type)
     }
 }

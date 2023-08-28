@@ -15,10 +15,10 @@ interface EventRemoteKeyDao {
     suspend fun min(): Long?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(EventRemoteKeyEntity: EventRemoteKeyEntity)
+    suspend fun insert(eventRemoteKeyEntity: EventRemoteKeyEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(EventRemoteKeyEntity: List<EventRemoteKeyEntity>)
+    suspend fun insert(eventRemoteKeyEntity: List<EventRemoteKeyEntity>)
 
     @Query("DELETE FROM EventRemoteKeyEntity")
     suspend fun clear()

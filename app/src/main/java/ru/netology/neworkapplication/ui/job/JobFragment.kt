@@ -21,13 +21,14 @@ import ru.netology.neworkapplication.adapter.job.JobAdapter
 import ru.netology.neworkapplication.adapter.job.JobLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.job.OnInteractionListener
 import ru.netology.neworkapplication.auth.AppAuth
+
 import ru.netology.neworkapplication.databinding.FragmentJobBinding
 import ru.netology.neworkapplication.dto.Job
 import ru.netology.neworkapplication.ui.AuthActivity
 import ru.netology.neworkapplication.ui.FeedFragment
 import ru.netology.neworkapplication.ui.event.EventFragment
 import ru.netology.neworkapplication.ui.wall.WallFeedFragment
-import ru.netology.neworkapplication.util.TokenManager
+
 import ru.netology.neworkapplication.viewmodel.JobViewModel
 import javax.inject.Inject
 
@@ -35,11 +36,15 @@ import javax.inject.Inject
 class JobFragment : Fragment() {
     private val viewModel: JobViewModel by viewModels()
 
-    @Inject
-    lateinit var tokenManager: TokenManager
+    companion object {
+        const val KEY_NAME = "name"
+        const val KEY_POSITION = "position"
+        const val KEY_START = "start"
+        const val KEY_FINISH = "finish"
+        const val KEY_ID = "id"
+    }
 
-    @Inject
-    lateinit var auth: AppAuth
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,7 +58,6 @@ class JobFragment : Fragment() {
                 viewModel.edit(job.id)
             }
 
-
             override fun onRemoveJob(job: Job) {
                 viewModel.removeJobById(job.id)
             }
@@ -63,11 +67,11 @@ class JobFragment : Fragment() {
                     replace(
                         R.id.container, EditJobFragment().apply {
                             arguments = Bundle().apply {
-                                putString("name", job.name)
-                                putString("position", job.position)
-                                putString("start", job.start)
-                                putString("finish", job.finish)
-                                putInt("id", job.id) // pass job id
+                                putString(KEY_NAME, job.name)
+                                putString(KEY_POSITION, job.position)
+                                putString(KEY_START, job.start)
+                                putString(KEY_FINISH, job.finish)
+                                putLong(KEY_ID, job.id)
                             }
                         }
                     )
@@ -75,7 +79,7 @@ class JobFragment : Fragment() {
                 }
             }
 
-        }, tokenManager)
+        })
         binding.list.adapter = adapter
         lifecycleScope.launchWhenStarted {
             viewModel.jobs.collect { jobs ->

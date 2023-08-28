@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.ui.event
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -13,41 +14,44 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.adapter.PostLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.events.EventLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.events.EventsAdapter
 import ru.netology.neworkapplication.adapter.events.OnInteractionListenerEvent
+import ru.netology.neworkapplication.auth.AppAuth
+import ru.netology.neworkapplication.auth.NoIdException
 import ru.netology.neworkapplication.databinding.FragmentEventBinding
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.ui.AuthActivity
 import ru.netology.neworkapplication.ui.NewPostFragment
 import ru.netology.neworkapplication.ui.job.JobFragment
 import ru.netology.neworkapplication.ui.wall.WallFeedFragment
-import ru.netology.neworkapplication.util.NoIdException
-import ru.netology.neworkapplication.util.TokenManager
+
 import ru.netology.neworkapplication.viewmodel.EventViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class EventFragment : Fragment() {
 
+    companion object {
+        const val KEY_CONTENT = "content"
+        const val KEY_ID = "id"
+    }
+
     private val eventViewModel: EventViewModel by activityViewModels()
 
     @Inject
-    lateinit var tokenManager: TokenManager
+    lateinit var appAuth: AppAuth
 
-    lateinit var eventAdapter: EventsAdapter
+    @Inject
+    @ApplicationContext
+    lateinit var fragmentContext: Context
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val binding = FragmentEventBinding.inflate(inflater, container, false)
-
-        eventAdapter = EventsAdapter(object : OnInteractionListenerEvent {
+    private val eventAdapter: EventsAdapter by lazy {
+        EventsAdapter(fragmentContext, object : OnInteractionListenerEvent {
 
             override fun onEdit(event: Event) {
                 eventViewModel.editEvent(event.id)
@@ -65,21 +69,29 @@ class EventFragment : Fragment() {
                 parentFragmentManager.commit {
                     replace(R.id.container, EditEventFragment().apply {
                         arguments = Bundle().apply {
-                            putString("content", event.content)
-                            putInt("id", event.id)
+                            putString(KEY_CONTENT, event.content)
+                            putLong(KEY_ID, event.id)
                         }
                     })
                     addToBackStack(null)
                 }
             }
 
-        }, tokenManager)
+        }, appAuth)
+    }
 
-        val adapter =
-            eventAdapter.withLoadStateHeaderAndFooter(
-                header = EventLoadingStateAdapter { eventAdapter.retry() },
-                footer = EventLoadingStateAdapter { eventAdapter.retry() }
-            )
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentEventBinding.inflate(inflater, container, false)
+
+        val adapter = eventAdapter.withLoadStateHeaderAndFooter(
+            header = EventLoadingStateAdapter { eventAdapter.retry() },
+            footer = EventLoadingStateAdapter { eventAdapter.retry() }
+        )
+
         binding.list.adapter = adapter
         eventViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
@@ -89,52 +101,51 @@ class EventFragment : Fragment() {
                     .show()
             }
         }
+
         eventViewModel.messageError.observe(viewLifecycleOwner) { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
+
         lifecycleScope.launchWhenCreated {
             eventViewModel.data.collectLatest { pagingData ->
                 eventAdapter.submitData(pagingData)
             }
         }
-        binding.swiperefresh.setOnRefreshListener {
 
+        binding.swiperefresh.setOnRefreshListener {
             eventAdapter.refresh()
         }
+
         lifecycleScope.launchWhenCreated {
             eventViewModel.data.collectLatest { pagingData ->
                 eventAdapter.submitData(pagingData)
                 binding.swiperefresh.isRefreshing = false
             }
         }
+
         try {
-
-            val currentUserId = tokenManager.getId()
-
-
-            binding.fab.isVisible = (currentUserId == 401)
-
+            val currentUserId = appAuth.getId()
+            binding.fab.isVisible = (currentUserId == 401L)
         } catch (e: NoIdException) {
             binding.fab.isVisible = false
         }
+
         binding.fab.setOnClickListener {
             parentFragmentManager.commit {
                 replace(R.id.container, NewEventFragment())
                 addToBackStack(null)
             }
         }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_main, menu)
-
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
@@ -159,12 +170,9 @@ class EventFragment : Fragment() {
                         }
                         true
                     }
-
-
                     else -> false
                 }
 
         }, viewLifecycleOwner)
-
     }
 }

@@ -21,17 +21,21 @@ import ru.netology.neworkapplication.viewmodel.PostViewModel
 class EditJobFragment : Fragment() {
 
     companion object {
+        const val KEY_ID = "id"
+        const val KEY_NAME = "name"
+        const val KEY_POSITION = "position"
+        const val KEY_START = "start"
+        const val KEY_FINISH = "finish"
         var Bundle.textArg: String? by StringArg
     }
 
     private val viewModel: JobViewModel by activityViewModels()
     private var fragmentBinding: FragmentNewJobBinding? = null
-    private var jobId: Int = 0
+    private var jobId: Long = 0
     private var name: String = ""
     private var position: String = ""
     private var start: String = ""
     private var finish: String = ""
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,23 +49,18 @@ class EditJobFragment : Fragment() {
         )
         fragmentBinding = binding
 
-        jobId = arguments?.getInt("id") ?: 0
-        name = arguments?.getString("name") ?: ""
-        position = arguments?.getString("position") ?: ""
-        start = arguments?.getString("start") ?: ""
-        finish = arguments?.getString("finish") ?: ""
+        jobId = arguments?.getLong(KEY_ID) ?: 0
+        name = arguments?.getString(KEY_NAME) ?: ""
+        position = arguments?.getString(KEY_POSITION) ?: ""
+        start = arguments?.getString(KEY_START) ?: ""
+        finish = arguments?.getString(KEY_FINISH) ?: ""
 
         binding.name.setText(name)
-
         binding.name.requestFocus()
         binding.position.setText(position)
-
         binding.position.requestFocus()
         binding.start.setText(start)
-
-        binding.finish.requestFocus()
         binding.finish.setText(finish)
-
         binding.position.requestFocus()
 
         return binding.root

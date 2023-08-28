@@ -1,5 +1,6 @@
 package ru.netology.neworkapplication.adapter.events
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -31,6 +32,7 @@ class EventLoadingStateAdapter(private val retryListener: () -> Unit) :
 }
 
 class EventLoadingViewHolder(
+
     private val itemLoadingBinding: ItemLoadingBinding,
     private val retryListener: () -> Unit
 ) :

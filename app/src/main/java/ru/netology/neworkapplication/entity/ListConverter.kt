@@ -7,14 +7,14 @@ import ru.netology.neworkapplication.dto.Attachment
 
 class ListConverter {
     @TypeConverter
-    fun fromString(value: String): List<Int> {
+    fun fromString(value: String): List<Long> {
         return value.split(",").mapNotNull {
-            it.toIntOrNull()
+            it.toLongOrNull()
         }
     }
 
     @TypeConverter
-    fun toString(value: List<Int>): String {
+    fun toString(value: List<Long>): String {
         return value.joinToString(",")
     }
 

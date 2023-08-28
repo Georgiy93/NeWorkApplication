@@ -19,7 +19,7 @@ import ru.netology.neworkapplication.error.ApiError
 import ru.netology.neworkapplication.error.AppError
 import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
-import ru.netology.neworkapplication.util.TokenManager
+
 
 
 import java.io.IOException
@@ -32,7 +32,7 @@ class WallRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
-    private val tokenManager: TokenManager,
+
 
     ) : WallRepository {
     @OptIn(ExperimentalPagingApi::class)
@@ -45,21 +45,20 @@ class WallRepositoryImpl @Inject constructor(
                 postDao = postDao,
                 postRemoteKeyDao = postRemoteKeyDao,
                 appDb = appDb,
-                tokenManager = tokenManager,
-            )
+
+                )
         ).flow
             .map { pagingData ->
                 pagingData.map(PostEntity::toDto)
 
             }
-    private val token = tokenManager.getToken()
+
 
     override suspend fun getAll() {
         try {
 
 
-            val response = apiService.getWallAll(token)
-            Log.d("apiService.getAll", "Response: ${response.code()} - ${response.message()}")
+            val response = apiService.getWallAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -81,7 +80,7 @@ class WallRepositoryImpl @Inject constructor(
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(120_000L)
-            val response = apiService.getWallNewer(token, id)
+            val response = apiService.getWallNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

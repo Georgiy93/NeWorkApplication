@@ -6,12 +6,13 @@ import androidx.room.withTransaction
 import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dao.PostDao
 import ru.netology.neworkapplication.dto.PostRemoteKeyDao
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
-import ru.netology.neworkapplication.util.TokenManager
+
 
 
 import java.io.IOException
@@ -23,7 +24,7 @@ class PostRemoteMediator(
     private val service: ApiService,
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
-    private val tokenManager: TokenManager,
+
 ) : RemoteMediator<Int, PostEntity>() {
 
 
@@ -31,7 +32,7 @@ class PostRemoteMediator(
         loadType: LoadType,
         state: PagingState<Int, PostEntity>
     ): MediatorResult {
-        val token = tokenManager.getToken()
+
         try {
 
 
@@ -43,13 +44,10 @@ class PostRemoteMediator(
                     val id = postRemoteKeyDao.max()
 
                     if (id == null) {
-                        service.getLatest(token, state.config.pageSize)
+                        service.getLatest(state.config.pageSize)
                     } else {
-                        val response = service.getAfter(token, id, state.config.pageSize)
-                        Log.d(
-                            "service.getAfter",
-                            "Response: ${response.code()} - ${response.message()}"
-                        )
+                        val response = service.getAfter(id, state.config.pageSize)
+
                         response
                     }
                 }
@@ -58,11 +56,8 @@ class PostRemoteMediator(
                 LoadType.APPEND -> {
 
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
-                    val response = service.getBefore(token, id, state.config.pageSize)
-                    Log.d(
-                        "service.getBefore",
-                        "Response: ${response.code()} - ${response.message()}"
-                    )
+                    val response = service.getBefore(id, state.config.pageSize)
+
                     response
 
                 }

@@ -5,12 +5,12 @@ enum class EventType {
 }
 
 sealed interface FeedItemEvent {
-    val id: Int
+    val id: Long
 }
 
 data class Event(
-    override val id: Int,
-    val authorId: Int,
+    override val id: Long,
+    val authorId: Long,
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,
@@ -19,14 +19,14 @@ data class Event(
     val published: String,
 
     val type: String,
-    val likeOwnerIds: List<Int>? = emptyList(),
+    val likeOwnerIds: List<Long>? = emptyList(),
     val likedByMe: Boolean,
-    val speakerIds: List<Int>? = emptyList(),
-    val participantsIds: List<Int>? = emptyList(),
+    val speakerIds: List<Long>? = emptyList(),
+    val participantsIds: List<Long>? = emptyList(),
     val participatedByMe: Boolean,
     val attachment: Attachment? = null,
     val link: String?,
     val ownedByMe: Boolean = false,
-    val users: Map<Int, UserPreview> = emptyMap()
+    val users: Map<Long, UserPreview> = emptyMap()
 ) : FeedItemEvent
 

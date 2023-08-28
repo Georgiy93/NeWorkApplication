@@ -17,10 +17,10 @@ interface PostRemoteKeyDao {
     suspend fun min(): Long?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(PostRemoteKeyEntity: PostRemoteKeyEntity)
+    suspend fun insert(postRemoteKeyEntity: PostRemoteKeyEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(PostRemoteKeyEntity: List<PostRemoteKeyEntity>)
+    suspend fun insert(postRemoteKeyEntity: List<PostRemoteKeyEntity>)
 
     @Query("DELETE FROM PostRemoteKeyEntity")
     suspend fun clear()

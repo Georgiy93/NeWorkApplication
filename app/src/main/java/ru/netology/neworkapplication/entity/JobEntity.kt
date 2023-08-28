@@ -10,7 +10,7 @@ import ru.netology.neworkapplication.dto.Post
 @Entity
 data class JobEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Long,
 
     val name: String,
     val position: String,

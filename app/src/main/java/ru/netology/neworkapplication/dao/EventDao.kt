@@ -8,8 +8,8 @@ import ru.netology.neworkapplication.entity.PostEntity
 
 @Dao
 interface EventDao {
-    @Query("SELECT * FROM EventEntity WHERE id = :id") // Update table name to PostEntity
-    suspend fun getEvent(id: Int): EventEntity?
+    @Query("SELECT * FROM EventEntity WHERE id = :id")
+    suspend fun getEvent(id: Long): EventEntity?
 
     @Update
     suspend fun update(event: EventEntity)
@@ -33,7 +33,7 @@ interface EventDao {
     suspend fun insert(events: List<EventEntity>)
 
     @Query("DELETE FROM EventEntity WHERE id = :id")
-    suspend fun removeById(id: Int)
+    suspend fun removeById(id: Long)
 
     @Query("DELETE FROM EventEntity")
     suspend fun clear()

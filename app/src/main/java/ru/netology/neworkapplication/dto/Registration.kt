@@ -2,7 +2,7 @@ package ru.netology.neworkapplication.dto
 
 
 data class RegistrationResponse(
-    val id: Int,
+    val id: Long,
     val token: String
 )
 
@@ -14,7 +14,7 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val id: Int,
+    val id: Long,
     val token: String
 
 )

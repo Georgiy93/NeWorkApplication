@@ -9,6 +9,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.netology.neworkapplication.BuildConfig
+import ru.netology.neworkapplication.auth.AppAuth
+import ru.netology.neworkapplication.auth.AuthInterceptor
+
 import javax.inject.Singleton
 
 @Module
@@ -20,11 +23,12 @@ class ApiServiceModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit =
+    fun provideRetrofit(appAuth: AppAuth): Retrofit =
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(
                 OkHttpClient.Builder()
+                    .addInterceptor(AuthInterceptor(appAuth))
                     .addInterceptor(
                         HttpLoggingInterceptor()
                             .apply {

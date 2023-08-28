@@ -30,4 +30,42 @@
     <string name="add_event">event</string>
     <string name="description_participant_avatar">Participant_avatar</string>
     <string name="event">event</string>
+    <string name="unknown_item_type">unknown item type</string>
+    <string name="unknown_item_type_error">"unknown_item_type_error">Unknown item type: %1$d</string>
+    <string name="unknown_date">unknown date</string>
+    <string name="datetime_title">Event date</string>
+    <string name="participants_header">Participants</string>
+    <string name="channel_remote_name">channel remote name</string>
+    <string name="channel_remote_description">channel remote description</string>
+    <string name="no_token_available">no token available</string>
+    <string name="no_id_available">no id available</string>
+    <string name="event_creation_instructions">В 1ой строке введите дату события. Далее нажмите и выберите тип события. Далее напишите описание события. При необходимости добавте участников, ссылку и картинку. Для удаления участника зажмите его имя или логин, после подтвердите удаление.\"</string>
+    <string name="event_instruction_title">\"Как пользоваться\"</string>
+    <string name="understand">Понятно</string>
+    <string name="main_title">Добро пожаловать в NETAPP!</string>
+    <string name="main_description"><![CDATA[
+        Cверху расположены кнопки:
+        1ая для просмотра событий,
+        2ая для просмотра вашего место работы,
+        3ия для просмотра ваших постов,
+        4ая это выход из вашего аккаунта
+    ]]></string>
+    <string name="user_not_found">\"User not found\"</string>
+    <string name="already_participant">User is already a participant</string>
+    <string name="not_participant">User is not a participant</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="event_not_found">Event not found</string>
+    <string name="job_not_found">job not found</string>
+    <string name="post_not_found">post not found</string>
+    <string name="multiple_observers_error">Multiple observers registered but only one will be notified of changes.</string>
+    <string name="registration_failed">registration failed</string>
+    <string name="registration_successful">registration successful</string>
+    <string name="login_failed">\"Login failed\"</string>
+    <string name="fill_fields">Please fill out all fields</string>
+    <string name="event_type">Event Type</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove_participant_confirmation">Do you want to remove %s?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="participant_login">\"Please enter a participant login\"</string>
 </resources>

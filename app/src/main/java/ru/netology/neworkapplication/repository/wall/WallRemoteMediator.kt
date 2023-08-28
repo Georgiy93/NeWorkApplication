@@ -10,7 +10,7 @@ import ru.netology.neworkapplication.dto.PostRemoteKeyDao
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
-import ru.netology.neworkapplication.util.TokenManager
+
 
 
 import java.io.IOException
@@ -23,7 +23,7 @@ class WallRemoteMediator(
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
 
-    private val tokenManager: TokenManager,
+
 ) : RemoteMediator<Int, PostEntity>() {
 
 
@@ -33,7 +33,7 @@ class WallRemoteMediator(
         state: PagingState<Int, PostEntity>
     ): MediatorResult {
 
-        val token = tokenManager.getToken()
+
         try {
 
 
@@ -45,9 +45,9 @@ class WallRemoteMediator(
                     val id = postRemoteKeyDao.max()
 
                     if (id == null) {
-                        service.getWallLatest(token, state.config.pageSize)
+                        service.getWallLatest(state.config.pageSize)
                     } else {
-                        service.getWallAfter(token, id, state.config.pageSize)
+                        service.getWallAfter(id, state.config.pageSize)
                     }
                 }
 
@@ -55,7 +55,7 @@ class WallRemoteMediator(
                 LoadType.APPEND -> {
 
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
-                    service.getWallBefore(token, id, state.config.pageSize)
+                    service.getWallBefore(id, state.config.pageSize)
 
                 }
                 else -> {
@@ -73,7 +73,7 @@ class WallRemoteMediator(
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        //postDao.clear()
+
 
                         if (!data.isNullOrEmpty()) {
 

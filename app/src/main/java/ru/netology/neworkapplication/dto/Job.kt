@@ -7,11 +7,11 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 sealed interface FeedItemJob {
-    val id: Int
+    val id: Long
 }
 
 data class Job(
-    override val id: Int,
+    override val id: Long,
     val name: String,
     val position: String,
     val start: String,
