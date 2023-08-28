@@ -10,16 +10,20 @@ data class Post(
     override val id: Long,
     val authorId: Long,
     val author: String,
-    val authorAvatar: String,
-    val content: String,
-    val published: Long,
+    val authorAvatar: String?,
+    val authorJob: String? = "",
+    val content: String = "",
+    val published: String,
     val likedByMe: Boolean,
-    val likes: Int = 0,
+
     val attachment: Attachment? = null,
     val ownedByMe: Boolean = false,
-) : FeedItem
+    val mentionedMe: Boolean = false,
+
+    ) : FeedItem
+
 
 data class Attachment(
     val url: String,
-    val type: AttachmentType,
+    val type: AttachmentType?,
 )

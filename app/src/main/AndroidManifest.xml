@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="${usesCleartextTraffic}"
+        android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
 
         <!-- AuthActivity is now the "main" activity of the app -->

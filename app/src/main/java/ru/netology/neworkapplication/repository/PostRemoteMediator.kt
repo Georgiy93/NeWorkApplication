@@ -1,15 +1,18 @@
 package ru.netology.neworkapplication.repository
 
+import android.util.Log
 import androidx.paging.*
 import androidx.room.withTransaction
 import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dao.PostDao
 import ru.netology.neworkapplication.dto.PostRemoteKeyDao
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
+
 
 
 import java.io.IOException
@@ -22,7 +25,7 @@ class PostRemoteMediator(
     private val postRemoteKeyDao: PostRemoteKeyDao,
     private val appDb: AppDb,
 
-    ) : RemoteMediator<Int, PostEntity>() {
+) : RemoteMediator<Int, PostEntity>() {
 
 
     override suspend fun load(
@@ -43,7 +46,9 @@ class PostRemoteMediator(
                     if (id == null) {
                         service.getLatest(state.config.pageSize)
                     } else {
-                        service.getAfter(id, state.config.pageSize)
+                        val response = service.getAfter(id, state.config.pageSize)
+
+                        response
                     }
                 }
 
@@ -51,7 +56,9 @@ class PostRemoteMediator(
                 LoadType.APPEND -> {
 
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
-                    service.getBefore(id, state.config.pageSize)
+                    val response = service.getBefore(id, state.config.pageSize)
+
+                    response
 
                 }
                 else -> {
@@ -69,7 +76,7 @@ class PostRemoteMediator(
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        //postDao.clear()
+                       // postDao.clear()
 
                         if (!data.isNullOrEmpty()) {
 

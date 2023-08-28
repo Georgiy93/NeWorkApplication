@@ -1,21 +1,35 @@
 package ru.netology.neworkapplication.ui
 
 import android.app.Activity
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toFile
+
 import androidx.core.view.MenuProvider
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
-
+import androidx.fragment.app.commit
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewPostBinding
+
 import ru.netology.neworkapplication.util.AndroidUtils
 import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.PostViewModel
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 
 @AndroidEntryPoint
 class NewPostFragment : Fragment() {
@@ -26,7 +40,9 @@ class NewPostFragment : Fragment() {
 
     private val viewModel: PostViewModel by activityViewModels()
 
+
     private var fragmentBinding: FragmentNewPostBinding? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,62 +58,49 @@ class NewPostFragment : Fragment() {
 
         arguments?.textArg
             ?.let(binding.edit::setText)
-
         binding.edit.requestFocus()
 
-//        val pickPhotoLauncher =
-//            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-//                when (it.resultCode) {
-//                    ImagePicker.RESULT_ERROR -> {
-//                        Snackbar.make(
-//                            binding.root,
-//                            ImagePicker.getError(it.data),
-//                            Snackbar.LENGTH_LONG
-//                        ).show()
-//                    }
-//                    Activity.RESULT_OK -> viewModel.changePhoto(it.data?.data)
-//                }
-//            }
-//
-//        binding.pickPhoto.setOnClickListener {
-//            ImagePicker.with(this)
-//                .crop()
-//                .compress(2048)
-//                .provider(ImageProvider.GALLERY)
-//                .galleryMimeTypes(
-//                    arrayOf(
-//                        "image/png",
-//                        "image/jpeg",
-//                    )
-//                )
-//                .createIntent(pickPhotoLauncher::launch)
-//        }
-//
-//        binding.takePhoto.setOnClickListener {
-//            ImagePicker.with(this)
-//                .crop()
-//                .compress(2048)
-//                .provider(ImageProvider.CAMERA)
-//                .createIntent(pickPhotoLauncher::launch)
-//        }
-//
-//        binding.removePhoto.setOnClickListener {
-//            viewModel.changePhoto(null)
-//        }
 
-        viewModel.postCreated.observe(viewLifecycleOwner) {
-            findNavController().navigateUp()
+
+        binding.clear.visibility = View.GONE
+        val photoLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                when (it.resultCode) {
+                    ImagePicker.RESULT_ERROR -> {
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.photo_error),
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                    else -> {
+                        val uri = it.data?.data ?: return@registerForActivityResult
+                        viewModel.changePhoto(uri.toFile(), uri)
+                    }
+                }
+            }
+
+
+        binding.pickPhoto.setOnClickListener {
+            ImagePicker.with(this)
+                .galleryOnly()
+                .crop()
+                .compress(2048)
+                .createIntent(photoLauncher::launch)
+
         }
+        viewModel.media.observe(viewLifecycleOwner) { media ->
+            if (media == null) {
+                binding.photoContainer.isGone = true
+                return@observe
+            }
+            binding.photoContainer.isVisible = true
+            binding.photo.setImageURI(media.uri)
 
-//        viewModel.photo.observe(viewLifecycleOwner) {
-//            if (it.uri == null) {
-//                binding.photoContainer.visibility = View.GONE
-//                return@observe
-//            }
-//
-//            binding.photoContainer.visibility = View.VISIBLE
-//            binding.photo.setImageURI(it.uri)
-//        }
+        }
+        binding.clear.visibility = View.VISIBLE
+
+
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -108,9 +111,15 @@ class NewPostFragment : Fragment() {
                 when (menuItem.itemId) {
                     R.id.save -> {
                         fragmentBinding?.let {
-                            viewModel.changeContent(it.edit.text.toString())
+
+
+                        viewModel.changeContent(it.edit.text.toString())
                             viewModel.save()
                             AndroidUtils.hideKeyboard(requireView())
+                        }
+                        parentFragmentManager.commit {
+                            replace(R.id.container, FeedFragment())
+                            addToBackStack(null)
                         }
                         true
                     }
@@ -118,12 +127,18 @@ class NewPostFragment : Fragment() {
                 }
 
         }, viewLifecycleOwner)
+        binding.clear.setOnClickListener {
+            viewModel.clearPhoto()
+        }
 
         return binding.root
     }
+
 
     override fun onDestroyView() {
         fragmentBinding = null
         super.onDestroyView()
     }
+
+
 }

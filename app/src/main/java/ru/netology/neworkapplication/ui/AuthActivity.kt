@@ -5,14 +5,15 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 
 
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.ActivityAuthBinding
-import ru.netology.neworkapplication.dto.LoginRequest
+import ru.netology.neworkapplication.dto.RequestLogin
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AuthActivity : AppCompatActivity() {
@@ -30,12 +31,12 @@ class AuthActivity : AppCompatActivity() {
                 val login = login.text.toString().trim()
                 val password = password.text.toString().trim()
                 if (login.isNotBlank() && password.isNotBlank()) {
-                    val loginRequest = LoginRequest(login, password)
+                    val loginRequest = RequestLogin(login, password)
                     viewModel.login(loginRequest)
                 } else {
                     Toast.makeText(
                         this@AuthActivity,
-                        "Please fill out all fields",
+                        getString(R.string.fill_fields),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -52,7 +53,7 @@ class AuthActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
             } else {
-                Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show()
             }
         })
 
@@ -60,8 +61,6 @@ class AuthActivity : AppCompatActivity() {
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
         })
 
-//        viewModel.loginLoading.observe(this, { isLoading ->
-//            binding.loginProgress.visibility = if (isLoading) View.VISIBLE else View.GONE
-//        })
+
     }
 }

@@ -6,7 +6,7 @@ import ru.netology.neworkapplication.enumeration.AttachmentType
 
 data class AttachmentEmbeddable(
     var url: String,
-    var type: AttachmentType,
+    var type: AttachmentType?,
 ) {
     fun toDto() = Attachment(url, type)
 
