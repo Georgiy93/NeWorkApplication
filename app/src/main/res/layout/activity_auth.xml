@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:scaleType="centerCrop"
             android:text="NETAPP"
-            android:textSize="48dp"
+            android:textSize="48sp"
             android:textStyle="bold"
             android:textColor="#000000"
             android:layout_marginTop="128dp"
@@ -26,7 +26,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:contentDescription="@string/description_NETAPP"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
 
         <ImageView
             android:id="@+id/label"
@@ -38,7 +39,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="128dp"
             app:layout_constraintEnd_toStartOf="@+id/NetAPP"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="Logo"
+            tools:ignore="HardcodedText" />
 
         <EditText
             android:id="@+id/login"
@@ -56,7 +59,8 @@
             android:layout_marginTop="24dp"
 
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/label" />
+            app:layout_constraintTop_toBottomOf="@+id/label"
+            tools:ignore="Autofill,HardcodedText" />
 
         <EditText
             android:id="@+id/password"
@@ -69,12 +73,13 @@
 
             android:paddingBottom="16dp"
             android:hint="Password"
-            android:inputType="textMultiLine"
+            android:inputType="textPassword"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="24dp"
 
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/login" />
+            app:layout_constraintTop_toBottomOf="@+id/login"
+            tools:ignore="Autofill,HardcodedText,TextFields" />
 
         <Button
             android:id="@+id/signIn"
@@ -87,7 +92,8 @@
             android:layout_marginTop="24dp"
 
             app:layout_constraintStart_toStartOf="@+id/password"
-            app:layout_constraintTop_toBottomOf="@+id/password" />
+            app:layout_constraintTop_toBottomOf="@+id/password"
+            tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/signUp"
@@ -100,7 +106,8 @@
             android:layout_marginTop="24dp"
 
             app:layout_constraintStart_toEndOf="@+id/signIn"
-            app:layout_constraintTop_toBottomOf="@+id/password" />
+            app:layout_constraintTop_toBottomOf="@+id/password"
+            tools:ignore="HardcodedText" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

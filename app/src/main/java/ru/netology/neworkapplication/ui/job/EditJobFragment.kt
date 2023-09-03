@@ -1,21 +1,15 @@
 package ru.netology.neworkapplication.ui.job
 
 import android.os.Bundle
-import android.view.*
-import androidx.core.view.MenuProvider
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import dagger.hilt.android.AndroidEntryPoint
-import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewJobBinding
-import ru.netology.neworkapplication.databinding.FragmentNewPostBinding
-import ru.netology.neworkapplication.dto.Post
-import ru.netology.neworkapplication.ui.NewPostFragment.Companion.textArg
-import ru.netology.neworkapplication.util.AndroidUtils
-import ru.netology.neworkapplication.util.StringArg
+import ru.netology.neworkapplication.util.AndroidUtils.setupJobMenu
 import ru.netology.neworkapplication.viewmodel.JobViewModel
-import ru.netology.neworkapplication.viewmodel.PostViewModel
 
 @AndroidEntryPoint
 class EditJobFragment : Fragment() {
@@ -26,7 +20,7 @@ class EditJobFragment : Fragment() {
         const val KEY_POSITION = "position"
         const val KEY_START = "start"
         const val KEY_FINISH = "finish"
-        var Bundle.textArg: String? by StringArg
+
     }
 
     private val viewModel: JobViewModel by activityViewModels()
@@ -71,43 +65,7 @@ class EditJobFragment : Fragment() {
 
         viewModel.edit(jobId)
 
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_new_post, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.save -> {
-                        fragmentBinding?.let {
-                            viewModel.changeName(it.name.text.toString())
-                            viewModel.changePosition(it.position.text.toString())
-                            viewModel.changeStart(it.start.text.toString())
-
-                            if (it.finish.text.toString().isEmpty()) {
-                                viewModel.changeFinish(null)
-                            } else {
-                                viewModel.changeFinish(it.finish.text.toString())
-                            }
-                            if (it.link.text.toString().isEmpty()) {
-
-                                viewModel.changeLink(null)
-                            } else {
-                                viewModel.changeLink(it.link.text.toString())
-                            }
-                            viewModel.save()
-                            AndroidUtils.hideKeyboard(requireView())
-                        }
-                        parentFragmentManager.commit {
-                            replace(R.id.container, JobFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
+        setupJobMenu(this, viewLifecycleOwner, viewModel)
     }
 
     override fun onDestroyView() {
