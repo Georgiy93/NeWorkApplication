@@ -1,21 +1,14 @@
 package ru.netology.neworkapplication.adapter.job
 
-import android.app.DatePickerDialog
-import android.content.Context
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.PopupMenu
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.neworkapplication.R
-import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.CardJobBinding
-
-import ru.netology.neworkapplication.dto.FeedItemJob
 import ru.netology.neworkapplication.dto.Job
-
-import java.text.SimpleDateFormat
 import java.util.*
 
 interface OnInteractionListener {
@@ -27,6 +20,7 @@ interface OnInteractionListener {
 
 }
 
+
 class JobAdapter(
     private val onInteractionListener: OnInteractionListener,
 
@@ -34,6 +28,8 @@ class JobAdapter(
 
     private var jobs: List<Job> = emptyList()
 
+
+    @SuppressLint("NotifyDataSetChanged")
     fun submitList(jobs: List<Job>) {
         this.jobs = jobs
         notifyDataSetChanged()
@@ -51,8 +47,6 @@ class JobAdapter(
     }
 
 
-
-
     class JobViewHolder(
         private val binding: CardJobBinding,
         private val onInteractionListener: OnInteractionListener,
@@ -65,6 +59,7 @@ class JobAdapter(
                 start.text = job.start
                 finish.text = job.finish
                 link.text = job.link
+                URLUtil.isValidUrl(link.text.toString())
                 menu.setOnClickListener {
                     PopupMenu(it.context, it).apply {
                         inflate(R.menu.options_post)
@@ -75,10 +70,12 @@ class JobAdapter(
                                     onInteractionListener.onRemoveJob(job)
                                     true
                                 }
+
                                 R.id.edit -> {
                                     onInteractionListener.onEditNavigateJob(job)
                                     true
                                 }
+
                                 else -> false
                             }
                         }

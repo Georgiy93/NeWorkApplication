@@ -24,7 +24,7 @@ class WallRemoteMediator(
     private val appDb: AppDb,
 
 
-) : RemoteMediator<Int, PostEntity>() {
+    ) : RemoteMediator<Int, PostEntity>() {
 
 
     override suspend fun load(
@@ -67,7 +67,7 @@ class WallRemoteMediator(
                 throw HttpException(result)
             }
             val data = result.body() ?: throw ApiError(
-                result.code(), result.message()
+                result.code()
             )
             appDb.withTransaction {
 
@@ -75,7 +75,7 @@ class WallRemoteMediator(
                     LoadType.REFRESH -> {
 
 
-                        if (!data.isNullOrEmpty()) {
+                        if (data.isNotEmpty()) {
 
                             if (postDao.isEmpty()) {
                                 postRemoteKeyDao.insert(
@@ -103,7 +103,7 @@ class WallRemoteMediator(
                     }
 
                     LoadType.APPEND -> {
-                        if (!data.isNullOrEmpty()) {
+                        if (data.isNotEmpty()) {
                             postRemoteKeyDao.insert(
                                 listOf(
 
