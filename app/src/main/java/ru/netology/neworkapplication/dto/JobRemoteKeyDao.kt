@@ -4,9 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import kotlinx.coroutines.selects.select
 import ru.netology.neworkapplication.entity.JobRemoteKeyEntity
-import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 
 
 @Dao

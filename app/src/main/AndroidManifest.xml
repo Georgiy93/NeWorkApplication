@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="ru.netology.neworkapplication">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
 
     <application
         android:name=".application.NeWorkApp"
@@ -17,8 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="${usesCleartextTraffic}"
-        android:enableOnBackInvokedCallback="true"
-        tools:targetApi="31">
+
+        tools:targetApi="31"
+        tools:ignore="DataExtractionRules">
 
         <!-- AuthActivity is now the "main" activity of the app -->
         <activity
@@ -33,7 +35,7 @@
         <activity
             android:name=".ui.SignUpActivity"
             android:exported="true" />
-        <activity android:name=".ui.FeedActivity"></activity>
+        <activity android:name=".ui.FeedActivity" />
 
     </application>
 
