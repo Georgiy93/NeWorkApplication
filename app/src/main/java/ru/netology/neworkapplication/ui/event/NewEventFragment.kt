@@ -3,32 +3,32 @@ package ru.netology.neworkapplication.ui.event
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.widget.TooltipCompat
 import androidx.core.net.toFile
-import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewEventBinding
 import ru.netology.neworkapplication.dto.EventType
-import ru.netology.neworkapplication.ui.FeedFragment
 import ru.netology.neworkapplication.util.AndroidUtils
 import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.EventViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -36,9 +36,11 @@ class NewEventFragment : Fragment() {
 
     companion object {
         var Bundle.textArg: String? by StringArg
-        var Bundle.eventIdArg: String? by StringArg
+
     }
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
     private val viewModel: EventViewModel by activityViewModels()
     private var participantsAdapter: ArrayAdapter<String>? = null
     private var fragmentBinding: FragmentNewEventBinding? = null
@@ -104,14 +106,14 @@ class NewEventFragment : Fragment() {
             true
         }
 
-        fragmentBinding?.type?.setOnClickListener { view ->
+        fragmentBinding?.type?.setOnClickListener { _ ->
             val eventTypes = arrayOf(EventType.OFFLINE, EventType.ONLINE)
             val eventTypeNames = eventTypes.map { it.toString() }.toTypedArray()
             AlertDialog.Builder(requireContext())
                 .setTitle(getString(R.string.event_type))
                 .setSingleChoiceItems(eventTypeNames, -1) { dialog, which ->
                     val eventType = eventTypes[which]
-                    fragmentBinding?.type?.setText(eventType.toString())
+                    fragmentBinding?.type?.text = eventType.toString()
                     dialog.dismiss()
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
@@ -162,15 +164,26 @@ class NewEventFragment : Fragment() {
         return binding.root
     }
 
+    private fun setDialogShown() {
+        sharedPreferences.edit().putBoolean("dialog_shown", true).apply()
+    }
+
+    private fun isDialogShown(): Boolean {
+        return sharedPreferences.getBoolean("dialog_shown", false)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.event_instruction_title))
-            .setMessage(
-                R.string.event_creation_instructions
-            )
-            .setPositiveButton(R.string.understand, null)
-            .show()
+        if (!isDialogShown()) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.event_instruction_title))
+                .setMessage(R.string.event_creation_instructions)
+                .setPositiveButton(R.string.understand) { _, _ ->
+
+                    setDialogShown()
+                }
+                .show()
+        }
         val calendar = Calendar.getInstance()
 
         val dateTimeSetListener =
@@ -184,7 +197,7 @@ class NewEventFragment : Fragment() {
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                     val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-                    sdf.setTimeZone(TimeZone.getDefault())
+                    sdf.timeZone = TimeZone.getDefault()
                     fragmentBinding?.datetime?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -205,41 +218,7 @@ class NewEventFragment : Fragment() {
             }
         }
 
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_new_post, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.save -> {
-                        fragmentBinding?.let { binding ->
-                            viewModel.changeDatetime(binding.datetime.text.toString())
-                            viewModel.changeType(binding.type.text.toString())
-                            viewModel.changeContent(binding.edit.text.toString())
-
-                            if (binding.link.text.toString().isEmpty()) {
-                                viewModel.changeLink(null)
-                            } else {
-                                viewModel.changeLink(binding.link.text.toString())
-                            }
-
-
-
-
-                            viewModel.saveEvent()
-                            AndroidUtils.hideKeyboard(requireView())
-                        }
-                        parentFragmentManager.commit {
-                            replace(R.id.container, EventFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
+        AndroidUtils.setupEventMenu(this, viewLifecycleOwner, viewModel)
 
     }
 

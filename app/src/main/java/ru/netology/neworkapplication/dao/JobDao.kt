@@ -4,7 +4,6 @@ import androidx.paging.PagingSource
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import ru.netology.neworkapplication.entity.JobEntity
-import ru.netology.neworkapplication.entity.PostEntity
 
 @Dao
 interface JobDao {
@@ -27,7 +26,7 @@ interface JobDao {
     suspend fun insert(jobs: List<JobEntity>)
 
     @Query("DELETE FROM JobEntity WHERE id = :id")
-    suspend fun removeJobById(id: kotlin.Long)
+    suspend fun removeJobById(id: Long)
 
     @Query("DELETE FROM JobEntity")
     suspend fun clear()
