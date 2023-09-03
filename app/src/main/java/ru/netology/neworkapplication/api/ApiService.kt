@@ -7,8 +7,7 @@ import retrofit2.http.*
 import ru.netology.neworkapplication.dto.*
 
 interface ApiService {
-    @POST("users/push-tokens")
-    suspend fun save(@Body pushToken: PushToken): Response<Unit>
+
 
     @Multipart
     @POST("/api/users/registration/")
@@ -104,11 +103,7 @@ interface ApiService {
         @Body job: Job,
     ): Response<Job>
 
-    @GET("/api/{id}/jobs")
-    suspend fun getJob(
 
-        @Path("id") id: Long
-    ): Response<Job>
 
     @DELETE("/api/my/jobs/{id}")
     suspend fun removeJobById(
@@ -216,11 +211,7 @@ interface ApiService {
         @Path("id") id: String
     ): Response<Event>
 
-    @POST("/api/events/{id}/participants/")
-    suspend fun addParticipants(
 
-        @Path("id") id: Long
-    ): Response<Event>
 
     @DELETE("/api/events/{id}/participants/")
     suspend fun removeParticipantById(

@@ -1,12 +1,10 @@
 package ru.netology.neworkapplication.repository.wall
 
-import android.util.Log
 import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
-import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
 import ru.netology.neworkapplication.dao.PostDao
@@ -26,6 +24,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("CanBeParameter")
 @Singleton
 class WallRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
@@ -60,12 +59,12 @@ class WallRepositoryImpl @Inject constructor(
 
             val response = apiService.getWallAll()
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
             val body = response.body()?.filter { post ->
                 post.content.isNotEmpty() && post.content.isNotBlank()
-            } ?: throw ApiError(response.code(), response.message())
+            } ?: throw ApiError(response.code())
 
             postDao.insert(body.toEntity())
 
@@ -82,12 +81,12 @@ class WallRepositoryImpl @Inject constructor(
             delay(120_000L)
             val response = apiService.getWallNewer(id)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
             val body = response.body()?.filter { post ->
                 post.content.isNotEmpty() && post.content.isNotBlank()
-            } ?: throw ApiError(response.code(), response.message())
+            } ?: throw ApiError(response.code())
 
             postDao.insert(body.toEntity())
 

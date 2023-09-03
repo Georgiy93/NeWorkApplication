@@ -4,7 +4,6 @@ import androidx.paging.PagingSource
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import ru.netology.neworkapplication.entity.EventEntity
-import ru.netology.neworkapplication.entity.PostEntity
 
 @Dao
 interface EventDao {
