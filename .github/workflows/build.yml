@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -18,7 +18,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y dos2unix
           dos2unix ./gradlew
+
       - name: Install Node 16
+
         uses: actions/setup-node@v2
         with:
           node-version: '16'
