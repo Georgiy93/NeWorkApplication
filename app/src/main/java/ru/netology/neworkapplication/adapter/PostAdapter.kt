@@ -4,22 +4,23 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.PopupMenu
-import androidx.core.content.ContentProviderCompat.requireContext
+
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import ru.netology.neworkapplication.BuildConfig
+
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.auth.AppAuth
 
 import ru.netology.neworkapplication.databinding.CardPostBinding
 import ru.netology.neworkapplication.dto.FeedItem
-import ru.netology.neworkapplication.dto.Job
+
 import ru.netology.neworkapplication.dto.Post
 
-import ru.netology.neworkapplication.view.loadCircleCrop
+
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -93,12 +94,12 @@ class PostViewHolder(
         binding.apply {
             Glide.with(itemView.context).clear(image)
             author.text = post.author
-
+            URLUtil.isValidUrl(link.text.toString())
             val originalFormat =
                 SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
             val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
             originalFormat.timeZone =
-                TimeZone.getDefault()
+                TimeZone.getTimeZone("UTC")
             val date = originalFormat.parse(post.published)
 
             published.text =
@@ -119,7 +120,7 @@ class PostViewHolder(
             if (post.attachment == null) {
                 image.visibility = View.GONE
             } else {
-                post.attachment?.url?.let {
+                post.attachment.url.let {
                     Glide.with(itemView.context)
                         .load(it)
                         .placeholder(R.drawable.baseline_upload_file_24)
@@ -129,7 +130,14 @@ class PostViewHolder(
                 }
             }
 
-            menu.visibility = if (post.authorId == appAuth.getId())
+            val currentUserId = try {
+                appAuth.getId()
+            } catch (_: Exception) {
+
+
+            }
+
+            menu.visibility = if (post.authorId == currentUserId)
                 View.VISIBLE else View.INVISIBLE
 
             menu.setOnClickListener {
@@ -144,9 +152,9 @@ class PostViewHolder(
                                 true
                             }
                             R.id.edit -> {
-                                if (post.authorId == appAuth.getId()) {
-                                    onInteractionListener.onEditNavigate(post)
-                                }
+
+                                onInteractionListener.onEditNavigate(post)
+
 
                                 true
                             }

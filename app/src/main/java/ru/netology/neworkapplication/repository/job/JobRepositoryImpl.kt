@@ -1,24 +1,17 @@
 package ru.netology.neworkapplication.repository.job
 
-import android.util.Log
-import androidx.paging.*
 
+import androidx.paging.*
+import kotlinx.coroutines.flow.*
 import retrofit2.HttpException
-import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
 import ru.netology.neworkapplication.dao.JobDao
 import ru.netology.neworkapplication.dto.*
 import ru.netology.neworkapplication.entity.JobEntity
-import kotlinx.coroutines.flow.*
-import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.toEntity
-
 import ru.netology.neworkapplication.error.ApiError
-import ru.netology.neworkapplication.error.UnknownError
 import ru.netology.neworkapplication.error.NetworkError
-
-
-
+import ru.netology.neworkapplication.error.UnknownError
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,7 +25,6 @@ class JobRepositoryImpl @Inject constructor(
 
 
     ) : JobRepository {
-    @OptIn(ExperimentalPagingApi::class)
     override val data: Flow<PagingData<FeedItemJob>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = { jobDao.getPagingSource() },
@@ -46,10 +38,10 @@ class JobRepositoryImpl @Inject constructor(
 
             val response = apiService.getJobAll()
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
 
 
             jobDao.insert(body.toEntity())
@@ -68,10 +60,10 @@ class JobRepositoryImpl @Inject constructor(
 
             val response = apiService.saveJob(job)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             jobDao.insert(JobEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
@@ -94,22 +86,7 @@ class JobRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun getJob(id: Long): Job {
-        try {
 
-            val response = apiService.getJob(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            return body
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw UnknownError
-        }
-    }
 
 
 }
