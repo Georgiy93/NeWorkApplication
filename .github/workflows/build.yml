@@ -18,7 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y dos2unix
           dos2unix ./gradlew
-      - name: Установка Node 16
+      - name: Install Node 16
         uses: actions/setup-node@v2
         with:
           node-version: '16'
