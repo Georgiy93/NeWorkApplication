@@ -1,20 +1,18 @@
 package ru.netology.neworkapplication.util
 
-import android.content.Context
 import androidx.annotation.MainThread
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import ru.netology.neworkapplication.R
 import java.util.concurrent.atomic.AtomicBoolean
 
-class SingleLiveEvent<T>(private val context: Context) : MutableLiveData<T>() {
+class SingleLiveEvent<T> : MutableLiveData<T>() {
     private var pending = AtomicBoolean(false)
 
     @MainThread
     override fun observe(owner: LifecycleOwner, observer: Observer<in T?>) {
         require(!hasActiveObservers()) {
-            error(context.getString(R.string.multiple_observers_error))
+            "Multiple observers registered but only one will be notified of changes."
         }
 
         super.observe(owner) {
@@ -30,4 +28,5 @@ class SingleLiveEvent<T>(private val context: Context) : MutableLiveData<T>() {
         super.setValue(t)
     }
 }
+
 

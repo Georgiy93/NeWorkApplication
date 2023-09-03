@@ -1,40 +1,36 @@
 package ru.netology.neworkapplication.ui.job
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.adapter.job.JobAdapter
-import ru.netology.neworkapplication.adapter.job.JobLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.job.OnInteractionListener
 import ru.netology.neworkapplication.auth.AppAuth
-
 import ru.netology.neworkapplication.databinding.FragmentJobBinding
 import ru.netology.neworkapplication.dto.Job
-import ru.netology.neworkapplication.ui.AuthActivity
 import ru.netology.neworkapplication.ui.FeedFragment
-import ru.netology.neworkapplication.ui.event.EventFragment
-import ru.netology.neworkapplication.ui.wall.WallFeedFragment
-
 import ru.netology.neworkapplication.viewmodel.JobViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class JobFragment : Fragment() {
     private val viewModel: JobViewModel by viewModels()
+
+    @Inject
+    lateinit var auth: AppAuth
 
     companion object {
         const val KEY_NAME = "name"
@@ -81,14 +77,18 @@ class JobFragment : Fragment() {
 
         })
         binding.list.adapter = adapter
-        lifecycleScope.launchWhenStarted {
-            viewModel.jobs.collect { jobs ->
-                adapter.submitList(jobs)
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.jobs.collect { jobs ->
+                        adapter.submitList(jobs)
+                    }
+                }
             }
         }
         viewModel.messageError.observe(
-            viewLifecycleOwner,
-            Observer { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() })
+            viewLifecycleOwner
+        ) { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
         binding.list.adapter = adapter
 
 
@@ -124,54 +124,26 @@ binding.back.visibility = View.GONE
                 addToBackStack(null)
             }
         }
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.jobs.collect { jobs ->
+                        adapter.submitList(jobs)
 
+
+                        binding.emptyText.visibility =
+                            if (jobs.isEmpty()) View.VISIBLE else View.GONE
+                        binding.list.visibility = if (jobs.isEmpty()) View.GONE else View.VISIBLE
+                    }
+                }
+            }
+        }
 
         return binding.root
 
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
-
-
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.signout -> {
-                        val intent = Intent(context, AuthActivity::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
-                        true
-                    }
-                    R.id.wall -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, WallFeedFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-
-                    R.id.event -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, EventFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-
-
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
-
-    }
 
 
 }

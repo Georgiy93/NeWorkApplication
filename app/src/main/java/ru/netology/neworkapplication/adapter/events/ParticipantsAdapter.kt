@@ -1,7 +1,7 @@
 package ru.netology.neworkapplication.adapter.events
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +22,8 @@ class ParticipantsAdapter(private val context: Context) :
 
     private val participants = mutableListOf<UserPreview>()
 
+
+    @SuppressLint("NotifyDataSetChanged")
     fun setParticipants(participantList: List<UserPreview>) {
         participants.clear()
         participants.addAll(participantList)

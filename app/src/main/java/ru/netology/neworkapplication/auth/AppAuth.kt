@@ -31,7 +31,7 @@ class AppAuth @Inject constructor(
             _authStateFlow = MutableStateFlow(AuthState())
             clearAuth()
         } else {
-            _authStateFlow = MutableStateFlow(AuthState(id.toLong(), token))
+            _authStateFlow = MutableStateFlow(AuthState(id, token))
         }
     }
 
@@ -40,7 +40,7 @@ class AppAuth @Inject constructor(
     fun saveTokenAndId(token: String, id: Long) {
         with(prefs.edit()) {
             putString(tokenKey, token)
-            putLong(idKey, id.toLong())
+            putLong(idKey, id)
             apply()
         }
         _authStateFlow.value = AuthState(id, token)
