@@ -1,8 +1,6 @@
 package ru.netology.neworkapplication.entity
 
 import androidx.room.*
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import ru.netology.neworkapplication.dto.*
 
 @Entity
@@ -93,5 +91,5 @@ data class EventEntity(
 
 }
 
-fun List<EventEntity>.toDto(): List<Event> = map(EventEntity::toDto)
+
 fun List<Event>.toEntity(): List<EventEntity> = map(EventEntity::fromDto)

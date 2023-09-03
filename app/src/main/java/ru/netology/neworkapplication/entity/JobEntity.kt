@@ -1,11 +1,8 @@
 package ru.netology.neworkapplication.entity
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.netology.neworkapplication.dto.Job
-
-import ru.netology.neworkapplication.dto.Post
 
 @Entity
 data class JobEntity(
@@ -43,5 +40,4 @@ data class JobEntity(
     }
 }
 
-fun List<JobEntity>.toDto(): List<Job> = map(JobEntity::toDto)
 fun List<Job>.toEntity(): List<JobEntity> = map(JobEntity::fromDto)
