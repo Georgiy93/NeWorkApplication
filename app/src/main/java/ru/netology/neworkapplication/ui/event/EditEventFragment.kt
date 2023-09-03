@@ -4,30 +4,30 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
-import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewEventBinding
 import ru.netology.neworkapplication.dto.EventType
-import ru.netology.neworkapplication.ui.FeedFragment
 import ru.netology.neworkapplication.util.AndroidUtils
-import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.EventViewModel
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 
 @AndroidEntryPoint
@@ -39,8 +39,6 @@ class EditEventFragment : Fragment() {
         const val KEY_LINK = "link"
         const val KEY_TYPE = "type"
         const val KEY_DATE = "date"
-
-        var Bundle.textArg: String? by StringArg
 
         fun newInstance(
             id: Int,
@@ -92,10 +90,10 @@ class EditEventFragment : Fragment() {
         dateTime = arguments?.getString(KEY_DATE) ?: ""
         binding.edit.setText(eventContent)
         binding.link.setText(eventLink)
-        binding.type.setText(eventType)
+        binding.type.text = eventType
         binding.datetime.setText(dateTime)
 
-        fragmentBinding?.type?.setOnClickListener { view ->
+        fragmentBinding?.type?.setOnClickListener { _ ->
             // list of event types
             val eventTypes = arrayOf(EventType.OFFLINE, EventType.ONLINE)
             val eventTypeNames = eventTypes.map { it.toString() }.toTypedArray()
@@ -104,7 +102,7 @@ class EditEventFragment : Fragment() {
                 .setTitle(R.string.event_type)
                 .setSingleChoiceItems(eventTypeNames, -1) { dialog, which ->
                     val eventType = eventTypes[which]
-                    fragmentBinding?.type?.setText(eventType.toString())
+                    fragmentBinding?.type?.text = eventType.toString()
                     dialog.dismiss()
                 }
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -117,7 +115,7 @@ class EditEventFragment : Fragment() {
         viewModel.editedEvent.observe(viewLifecycleOwner) { event ->
             fragmentBinding?.edit?.setText(event.content)
             fragmentBinding?.link?.setText(event.link)
-            fragmentBinding?.type?.setText(event.type)
+            fragmentBinding?.type?.text = event.type
             fragmentBinding?.datetime?.setText(event.datetime)
 
             val participantsNames = viewModel.getParticipantNamesForEvent(event.id)
@@ -139,7 +137,7 @@ class EditEventFragment : Fragment() {
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                     val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-                    sdf.setTimeZone(TimeZone.getDefault())
+                    sdf.timeZone = TimeZone.getDefault()
                     fragmentBinding?.datetime?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -198,39 +196,7 @@ class EditEventFragment : Fragment() {
         }
         binding.clear.visibility = View.VISIBLE
         viewModel.editEvent(eventId)
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_new_post, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.save -> {
-                        fragmentBinding?.let {
-                            viewModel.changeDatetime(it.datetime.text.toString())
-                            viewModel.changeType(it.type.text.toString())
-                            viewModel.changeContent(it.edit.text.toString())
-
-
-                            if (it.link.text.toString().isEmpty()) {
-
-                                viewModel.changeLink(null) // set finish to null if it is empty
-                            } else {
-                                viewModel.changeLink(it.link.text.toString())
-                            }
-                            viewModel.saveEvent()
-                            AndroidUtils.hideKeyboard(requireView())
-                        }
-                        parentFragmentManager.commit {
-                            replace(R.id.container, EventFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
+        AndroidUtils.setupEventMenu(this, viewLifecycleOwner, viewModel)
         binding.clear.setOnClickListener {
             viewModel.clearPhoto()
         }

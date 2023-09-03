@@ -1,28 +1,33 @@
 package ru.netology.neworkapplication.ui
 
+
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-
-
 import dagger.hilt.android.AndroidEntryPoint
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.neworkapplication.R
+import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.ActivityAuthBinding
 import ru.netology.neworkapplication.dto.RequestLogin
 import ru.netology.neworkapplication.viewmodel.AuthViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AuthActivity : AppCompatActivity() {
-
+    @Inject
+    lateinit var appAuth: AppAuth
     private val viewModel: AuthViewModel by viewModels()
     private lateinit var binding: ActivityAuthBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val authState = appAuth.authStateFlow.value
+        if (authState.token != null) {
+            navigateToFeed()
+            return
+        }
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -47,7 +52,7 @@ class AuthActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.loginResult.observe(this, { isSuccess ->
+        viewModel.loginResult.observe(this) { isSuccess ->
             if (isSuccess) {
                 val intent = Intent(this@AuthActivity, FeedActivity::class.java)
                 startActivity(intent)
@@ -55,12 +60,18 @@ class AuthActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show()
             }
-        })
+        }
 
-        viewModel.loginError.observe(this, { error ->
+        viewModel.loginError.observe(this) { error ->
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
-        })
+        }
 
 
+    }
+
+    private fun navigateToFeed() {
+        val intent = Intent(this@AuthActivity, FeedActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

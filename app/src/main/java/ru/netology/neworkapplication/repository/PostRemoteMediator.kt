@@ -1,20 +1,16 @@
 package ru.netology.neworkapplication.repository
 
-import android.util.Log
+
 import androidx.paging.*
 import androidx.room.withTransaction
 import retrofit2.HttpException
-import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
-import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dao.PostDao
+import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.dto.PostRemoteKeyDao
 import ru.netology.neworkapplication.entity.PostEntity
 import ru.netology.neworkapplication.entity.PostRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
-
-
-
 import java.io.IOException
 
 
@@ -70,7 +66,7 @@ class PostRemoteMediator(
                 throw HttpException(result)
             }
             val data = result.body() ?: throw ApiError(
-                result.code(), result.message()
+                result.code()
             )
             appDb.withTransaction {
 
@@ -78,7 +74,7 @@ class PostRemoteMediator(
                     LoadType.REFRESH -> {
                        // postDao.clear()
 
-                        if (!data.isNullOrEmpty()) {
+                        if (data.isNotEmpty()) {
 
                             if (postDao.isEmpty()) {
                                 postRemoteKeyDao.insert(
@@ -106,7 +102,7 @@ class PostRemoteMediator(
                     }
 
                     LoadType.APPEND -> {
-                        if (!data.isNullOrEmpty()) {
+                        if (data.isNotEmpty()) {
                             postRemoteKeyDao.insert(
                                 listOf(
 

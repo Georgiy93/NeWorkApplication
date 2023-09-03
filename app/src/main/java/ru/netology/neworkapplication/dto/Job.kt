@@ -1,11 +1,5 @@
 package ru.netology.neworkapplication.dto
 
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
-
 sealed interface FeedItemJob {
     val id: Long
 }
