@@ -1,35 +1,30 @@
 package ru.netology.neworkapplication.ui.event
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ConcatAdapter
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.neworkapplication.R
-import ru.netology.neworkapplication.adapter.PostLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.events.EventLoadingStateAdapter
 import ru.netology.neworkapplication.adapter.events.EventsAdapter
 import ru.netology.neworkapplication.adapter.events.OnInteractionListenerEvent
 import ru.netology.neworkapplication.auth.AppAuth
-import ru.netology.neworkapplication.auth.NoIdException
 import ru.netology.neworkapplication.databinding.FragmentEventBinding
 import ru.netology.neworkapplication.dto.Event
-import ru.netology.neworkapplication.ui.AuthActivity
-import ru.netology.neworkapplication.ui.NewPostFragment
-import ru.netology.neworkapplication.ui.job.JobFragment
-import ru.netology.neworkapplication.ui.wall.WallFeedFragment
-
 import ru.netology.neworkapplication.viewmodel.EventViewModel
 import javax.inject.Inject
 
@@ -106,9 +101,13 @@ class EventFragment : Fragment() {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
 
-        lifecycleScope.launchWhenCreated {
-            eventViewModel.data.collectLatest { pagingData ->
-                eventAdapter.submitData(pagingData)
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {
+                    eventViewModel.data.collectLatest { pagingData ->
+                        eventAdapter.submitData(pagingData)
+                    }
+                }
             }
         }
 
@@ -116,19 +115,18 @@ class EventFragment : Fragment() {
             eventAdapter.refresh()
         }
 
-        lifecycleScope.launchWhenCreated {
-            eventViewModel.data.collectLatest { pagingData ->
-                eventAdapter.submitData(pagingData)
-                binding.swiperefresh.isRefreshing = false
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {
+                    eventViewModel.data.collectLatest { pagingData ->
+                        eventAdapter.submitData(pagingData)
+                        binding.swiperefresh.isRefreshing = false
+                    }
+                }
             }
         }
 
-        try {
-            val currentUserId = appAuth.getId()
-            binding.fab.isVisible = (currentUserId == 401L)
-        } catch (e: NoIdException) {
-            binding.fab.isVisible = false
-        }
+
 
         binding.fab.setOnClickListener {
             parentFragmentManager.commit {
@@ -140,39 +138,5 @@ class EventFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.signout -> {
-                        val intent = Intent(context, AuthActivity::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
-                        true
-                    }
-                    R.id.wall -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, WallFeedFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    R.id.job -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, JobFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
-    }
 }

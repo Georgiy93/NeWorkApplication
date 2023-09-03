@@ -30,6 +30,7 @@ class PostLoadingStateAdapter(private val retryListener: () -> Unit) :
 
 }
 
+
 class PostLoadingViewHolder(
     private val itemLoadingBinding: ItemLoadingBinding,
     private val retryListener: () -> Unit

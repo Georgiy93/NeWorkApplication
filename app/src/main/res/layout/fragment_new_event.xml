@@ -35,7 +35,8 @@
                 android:layout_marginTop="@dimen/common_spacing"
                 android:layout_marginStart="@dimen/common_spacing"
                 android:layout_marginEnd="@dimen/common_spacing"
-                android:hint="Enter the date of the event" />
+                android:hint="Enter the date of the event"
+                tools:ignore="Autofill,HardcodedText,TextFields" />
 
             <TextView
                 android:id="@+id/type"
@@ -44,7 +45,8 @@
                 android:layout_marginTop="@dimen/common_spacing"
                 android:layout_marginStart="@dimen/common_spacing"
                 android:layout_marginEnd="@dimen/common_spacing"
-                android:hint="Press to select the event format" />
+                android:hint="Press to select the event format"
+                tools:ignore="HardcodedText" />
 
             <EditText
                 android:id="@+id/edit"
@@ -54,7 +56,8 @@
                 android:background="@android:color/transparent"
                 android:hint="Enter the сontent"
                 android:inputType="textMultiLine"
-                android:padding="@dimen/common_spacing" />
+                android:padding="@dimen/common_spacing"
+                tools:ignore="Autofill,HardcodedText" />
 
             <EditText
                 android:id="@+id/link"
@@ -65,7 +68,8 @@
                 android:padding="@dimen/common_spacing"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
-                android:hint="link" />
+                android:hint="link"
+                tools:ignore="Autofill,HardcodedText,TextFields" />
 
             <FrameLayout
                 android:id="@+id/photoContainer"
@@ -88,23 +92,25 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"
-                android:padding="@dimen/common_spacing" />
+                android:padding="@dimen/common_spacing"
+                tools:ignore="HardcodedText" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/participantsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
-                android:tooltipText="Long press to remove participant" />
+                android:tooltipText="Long press to remove participant"
+                tools:targetApi="o" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter participant"
                 android:layout_marginTop="8dp"
-                android:padding="@dimen/common_spacing">
+                android:padding="@dimen/common_spacing"
+                tools:ignore="HardcodedText">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/participantEditText"
@@ -121,7 +127,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="Add"
-                android:layout_marginStart="8dp" />
+                android:layout_marginStart="8dp"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 
