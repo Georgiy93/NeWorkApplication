@@ -48,7 +48,7 @@ class SignUpActivity : AppCompatActivity() {
 
         }
 
-        viewModel.registrationResult.observe(this, { response ->
+        viewModel.registrationResult.observe(this) { response ->
             if (response.responseBody != null) {
 
                 Toast.makeText(
@@ -67,7 +67,7 @@ class SignUpActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
-        })
+        }
     }
 
 

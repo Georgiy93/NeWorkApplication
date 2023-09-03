@@ -18,9 +18,9 @@
             android:contentDescription="@string/Job"
             android:text="Job"
             android:textColor="#2233FF"
-            android:textSize="40dp"
+            android:textSize="40sp"
             android:textStyle="bold"
-            tools:ignore="MissingConstraints" />
+            tools:ignore="HardcodedText,MissingConstraints" />
 
         <TextView
             android:id="@+id/name"
@@ -37,7 +37,8 @@
 
 
             app:layout_constraintStart_toStartOf="@+id/job"
-            app:layout_constraintTop_toBottomOf="@+id/job" />
+            app:layout_constraintTop_toBottomOf="@+id/job"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/position"
@@ -54,7 +55,8 @@
             app:layout_constraintEnd_toEndOf="parent"
 
             app:layout_constraintStart_toStartOf="@+id/name"
-            app:layout_constraintTop_toBottomOf="@+id/name" />
+            app:layout_constraintTop_toBottomOf="@+id/name"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/start"
@@ -71,7 +73,8 @@
             app:layout_constraintEnd_toEndOf="parent"
 
             app:layout_constraintStart_toStartOf="@+id/position"
-            app:layout_constraintTop_toBottomOf="@+id/position" />
+            app:layout_constraintTop_toBottomOf="@+id/position"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/finish"
@@ -88,7 +91,8 @@
             app:layout_constraintEnd_toEndOf="parent"
 
             app:layout_constraintStart_toStartOf="@+id/start"
-            app:layout_constraintTop_toBottomOf="@+id/start" />
+            app:layout_constraintTop_toBottomOf="@+id/start"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/link"
@@ -98,6 +102,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginEnd="24dp"
             android:hint="link"
+            android:autoLink="web"
             android:paddingTop="16dp"
 
 
@@ -105,7 +110,8 @@
             app:layout_constraintEnd_toEndOf="parent"
 
             app:layout_constraintStart_toStartOf="@+id/finish"
-            app:layout_constraintTop_toBottomOf="@+id/finish" />
+            app:layout_constraintTop_toBottomOf="@+id/finish"
+            tools:ignore="HardcodedText" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu"
