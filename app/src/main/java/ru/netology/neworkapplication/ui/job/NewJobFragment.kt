@@ -1,30 +1,18 @@
 package ru.netology.neworkapplication.ui.job
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
-import android.view.*
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.MenuProvider
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
-import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
-
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewJobBinding
-
-import ru.netology.neworkapplication.ui.wall.WallFeedFragment
-
-import ru.netology.neworkapplication.util.AndroidUtils
+import ru.netology.neworkapplication.util.AndroidUtils.setupJobMenu
 import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.JobViewModel
-import ru.netology.neworkapplication.viewmodel.PostViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -84,7 +72,7 @@ class NewJobFragment : Fragment() {
                     startCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                     val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-                    sdf.setTimeZone(TimeZone.getDefault())
+                    sdf.timeZone = TimeZone.getDefault()
                     fragmentBinding?.start?.setText(sdf.format(startCalendar.time))
                 }
                 TimePickerDialog(
@@ -105,7 +93,7 @@ class NewJobFragment : Fragment() {
                     finishCalendar.set(Calendar.MILLISECOND, 0)
                     val myFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                     val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-                    sdf.setTimeZone(TimeZone.getDefault())
+                    sdf.timeZone = TimeZone.getDefault()
                     fragmentBinding?.finish?.setText(sdf.format(finishCalendar.time))
                 }
                 TimePickerDialog(
@@ -138,41 +126,7 @@ class NewJobFragment : Fragment() {
             }
         }
 
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_new_post, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.save -> {
-                        fragmentBinding?.let {
-                            viewModel.changeName(it.name.text.toString())
-                            viewModel.changePosition(it.position.text.toString())
-                            viewModel.changeStart(it.start.text.toString())
-
-                            if (it.finish.text.toString().isEmpty()) {
-                                viewModel.changeFinish(null)
-                            } else {
-                                viewModel.changeFinish(it.finish.text.toString())
-                            }
-                            if (it.link.text.toString().isEmpty()) {
-
-                                viewModel.changeLink(null)
-                            } else {
-                                viewModel.changeLink(it.link.text.toString())
-                            }
-                            viewModel.save()
-                            AndroidUtils.hideKeyboard(requireView())
-                        }
-
-                        parentFragmentManager.popBackStack()
-                        true
-                    }
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
+        setupJobMenu(this, viewLifecycleOwner, viewModel)
 
     }
 

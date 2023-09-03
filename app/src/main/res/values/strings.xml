@@ -4,7 +4,6 @@
     <string name="description_post_menu">Post menu</string>
     <string name="description_post_like">Like</string>
     <string name="description_sign_up">Sign up</string>
-    <string name="description_post_share">Share</string>
     <string name="sign_out">Sign Out </string>
     <string name="menu_save">Save</string>
     <string name="empty_posts">There are no posts.\nIf you create a new post, it will appear here</string>
@@ -15,8 +14,6 @@
     <string name="remove">Remove</string>
     <string name="menu_remove">Remove</string>
     <string name="menu_edit">Edit</string>
-    <string name="sign_up">Sign Up</string>
-    <string name="sign_in">Sign In</string>
     <string name="wall">Wall</string>
     <string name="description_NETAPP">NETAPP</string>
     <string name="attachment">attachment</string>
@@ -27,7 +24,6 @@
     <string name="description_select_photo">select photo</string>
     <string name="photo_error">Error loading photo</string>
     <string name="empty_jobs">There are not jobs</string>
-    <string name="add_event">event</string>
     <string name="description_participant_avatar">Participant_avatar</string>
     <string name="event">event</string>
     <string name="unknown_item_type">unknown item type</string>
@@ -35,8 +31,6 @@
     <string name="unknown_date">unknown date</string>
     <string name="datetime_title">Event date</string>
     <string name="participants_header">Participants</string>
-    <string name="channel_remote_name">channel remote name</string>
-    <string name="channel_remote_description">channel remote description</string>
     <string name="no_token_available">no token available</string>
     <string name="no_id_available">no id available</string>
     <string name="event_creation_instructions">В 1ой строке введите дату события. Далее нажмите и выберите тип события. Далее напишите описание события. При необходимости добавте участников, ссылку и картинку. Для удаления участника зажмите его имя или логин, после подтвердите удаление.\"</string>
@@ -54,10 +48,9 @@
     <string name="already_participant">User is already a participant</string>
     <string name="not_participant">User is not a participant</string>
     <string name="error_occurred">An error occurred</string>
-    <string name="event_not_found">Event not found</string>
+
     <string name="job_not_found">job not found</string>
-    <string name="post_not_found">post not found</string>
-    <string name="multiple_observers_error">Multiple observers registered but only one will be notified of changes.</string>
+
     <string name="registration_failed">registration failed</string>
     <string name="registration_successful">registration successful</string>
     <string name="login_failed">\"Login failed\"</string>

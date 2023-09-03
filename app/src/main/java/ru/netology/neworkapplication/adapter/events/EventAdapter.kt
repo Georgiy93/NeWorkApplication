@@ -7,20 +7,18 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.PopupMenu
-
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.databinding.CardEventBinding
 import ru.netology.neworkapplication.dto.Event
 import ru.netology.neworkapplication.dto.FeedItemEvent
-
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -84,13 +82,14 @@ class EventsDiffCallback : DiffUtil.ItemCallback<FeedItemEvent>() {
     }
 }
 
+
 class EventsViewHolder(
     private val context: Context,
     private val binding: CardEventBinding,
     private val onInteractionListener: OnInteractionListenerEvent,
     private val appAuth: AppAuth
 ) : RecyclerView.ViewHolder(binding.root) {
-    fun removeMicroseconds(date: String): String {
+    private fun removeMicroseconds(date: String): String {
         val zIdx = date.lastIndexOf("Z")
         val dotIdx = date.lastIndexOf(".")
         return if (dotIdx != -1 && zIdx != -1 && zIdx - dotIdx > 4) {
@@ -112,9 +111,9 @@ class EventsViewHolder(
                 SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
             val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
             originalFormatWithoutMilliseconds.timeZone =
-                TimeZone.getDefault()
+                TimeZone.getTimeZone("UTC")
             originalFormatWithMilliseconds.timeZone =
-                TimeZone.getDefault()
+                TimeZone.getTimeZone("UTC")
 
             var date = try {
                 originalFormatWithMilliseconds.parse(removeMicroseconds(event.published))
@@ -139,7 +138,7 @@ class EventsViewHolder(
             content.text = event.content
             type.text = event.type
             link.text = event.link
-
+            URLUtil.isValidUrl(link.text.toString())
 
 
             link.setOnClickListener {
@@ -159,7 +158,7 @@ class EventsViewHolder(
             if (event.attachment == null) {
                 image.visibility = View.GONE
             } else {
-                event.attachment?.url?.let {
+                event.attachment.url.let {
                     Glide.with(itemView.context)
                         .load(it)
                         .placeholder(R.drawable.baseline_upload_file_24)
@@ -168,9 +167,14 @@ class EventsViewHolder(
                         .into(image)
                 }
             }
+            val currentUserId = try {
+                appAuth.getId()
+            } catch (_: Exception) {
 
 
-            menu.visibility = if (event.authorId == appAuth.getId())
+            }
+
+            menu.visibility = if (event.authorId == currentUserId)
                 View.VISIBLE else View.INVISIBLE
 
             menu.setOnClickListener {
@@ -184,10 +188,11 @@ class EventsViewHolder(
                                 onInteractionListener.onRemove(event)
                                 true
                             }
+
                             R.id.edit -> {
-                                if (event.authorId == appAuth.getId()) {
-                                    onInteractionListener.onEditNavigate(event)
-                                }
+
+                                onInteractionListener.onEditNavigate(event)
+
 
                                 true
                             }

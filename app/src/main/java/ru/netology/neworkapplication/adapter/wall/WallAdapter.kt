@@ -78,7 +78,15 @@ class WallViewHolder(
     private val appAuth: AppAuth
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(post: Post) {
-        if (post.authorId == appAuth.getId()) {
+        val currentUserId = try {
+            appAuth.getId()
+        } catch (_: Exception) {
+
+
+        }
+
+
+        if (post.authorId == currentUserId) {
             binding.apply {
                 author.text = post.author
 
@@ -86,7 +94,7 @@ class WallViewHolder(
                     SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
                 val targetFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
                 originalFormat.timeZone =
-                    TimeZone.getDefault()
+                    TimeZone.getTimeZone("UTC")
                 val date = originalFormat.parse(post.published)
 
                 published.text = if (date != null) targetFormat.format(date)
@@ -102,7 +110,7 @@ class WallViewHolder(
                     Glide.with(itemView.context).clear(image)
                     image.visibility = View.GONE
                 } else {
-                    post.attachment?.url?.let {
+                    post.attachment.url.let {
                         Glide.with(itemView.context)
                             .load(it)
                             .into(image)

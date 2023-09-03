@@ -1,9 +1,10 @@
+
 package ru.netology.neworkapplication.error
 
 import android.database.SQLException
 import java.io.IOException
 
-sealed class AppError(var code: String) : RuntimeException() {
+sealed class AppError : RuntimeException() {
     companion object {
         fun from(e: Throwable): AppError = when (e) {
             is AppError -> e
@@ -14,7 +15,8 @@ sealed class AppError(var code: String) : RuntimeException() {
     }
 }
 
-class ApiError(val status: Int, code: String) : AppError(code)
-object NetworkError : AppError("error_network")
-object DbError : AppError("error_db")
-object UnknownError : AppError("error_unknown")
+
+class ApiError(@Suppress("unused") val status: Int) : AppError()
+object NetworkError : AppError()
+object DbError : AppError()
+object UnknownError : AppError()

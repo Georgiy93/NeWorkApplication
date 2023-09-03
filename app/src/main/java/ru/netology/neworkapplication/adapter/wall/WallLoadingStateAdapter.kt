@@ -30,6 +30,7 @@ class WallLoadingStateAdapter(private val retryListener: () -> Unit) :
 
 }
 
+
 class WallLoadingViewHolder(
     private val itemLoadingBinding: ItemLoadingBinding,
     private val retryListener: () -> Unit
