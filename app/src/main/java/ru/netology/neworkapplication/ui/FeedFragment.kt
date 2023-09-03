@@ -3,45 +3,31 @@ package ru.netology.neworkapplication.ui
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ConcatAdapter
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
-
 import kotlinx.coroutines.flow.collectLatest
-import ru.netology.neworkapplication.adapter.OnInteractionListener
-import ru.netology.neworkapplication.adapter.events.OnInteractionListenerEvent
-import ru.netology.neworkapplication.adapter.PostsAdapter
-import ru.netology.neworkapplication.dto.Post
+import kotlinx.coroutines.launch
 import ru.netology.neworkapplication.R
-
+import ru.netology.neworkapplication.adapter.OnInteractionListener
 import ru.netology.neworkapplication.adapter.PostLoadingStateAdapter
-import ru.netology.neworkapplication.adapter.events.EventLoadingStateAdapter
-import ru.netology.neworkapplication.adapter.events.EventsAdapter
+import ru.netology.neworkapplication.adapter.PostsAdapter
 import ru.netology.neworkapplication.auth.AppAuth
-
 import ru.netology.neworkapplication.databinding.FragmentFeedBinding
-import ru.netology.neworkapplication.dto.Event
-import ru.netology.neworkapplication.ui.event.EditEventFragment
-import ru.netology.neworkapplication.ui.event.EventFragment
-import ru.netology.neworkapplication.ui.event.NewEventFragment
-import ru.netology.neworkapplication.ui.job.JobFragment
-import ru.netology.neworkapplication.ui.wall.WallFeedFragment
-
-
-import ru.netology.neworkapplication.viewmodel.EventViewModel
-
-
+import ru.netology.neworkapplication.dto.Post
 import ru.netology.neworkapplication.viewmodel.PostViewModel
 import javax.inject.Inject
 
@@ -54,6 +40,9 @@ class FeedFragment : Fragment() {
     }
 
     private val postViewModel: PostViewModel by activityViewModels()
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     @Inject
     lateinit var auth: AppAuth
@@ -118,9 +107,13 @@ class FeedFragment : Fragment() {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
 
-        lifecycleScope.launchWhenCreated {
-            postViewModel.data.collectLatest { pagingData ->
-                postAdapter.submitData(pagingData)
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {
+                    postViewModel.data.collectLatest { pagingData ->
+                        postAdapter.submitData(pagingData)
+                    }
+                }
             }
         }
 
@@ -128,10 +121,14 @@ class FeedFragment : Fragment() {
             postAdapter.refresh()
         }
 
-        lifecycleScope.launchWhenCreated {
-            postViewModel.data.collectLatest { pagingData ->
-                postAdapter.submitData(pagingData)
-                binding.swiperefresh.isRefreshing = false
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                launch {
+                    postViewModel.data.collectLatest { pagingData ->
+                        postAdapter.submitData(pagingData)
+                        binding.swiperefresh.isRefreshing = false
+                    }
+                }
             }
         }
 
@@ -145,52 +142,29 @@ class FeedFragment : Fragment() {
         return binding.root
     }
 
+    private fun isDialogShown(): Boolean {
+        return sharedPreferences.getBoolean("DIALOG_SHOWN", false)
+    }
+
+    private fun setDialogShown() {
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("DIALOG_SHOWN", true)
+        editor.apply()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.main_title))
-            .setMessage(getString(R.string.main_description))
-            .setPositiveButton(getString(R.string.understand), null)
-            .show()
-
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.signout -> {
-                        val intent = Intent(context, AuthActivity::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
-                        true
-                    }
-                    R.id.wall -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, WallFeedFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    R.id.job -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, JobFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    R.id.event -> {
-                        parentFragmentManager.commit {
-                            replace(R.id.container, EventFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    else -> false
+        if (!isDialogShown()) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.main_title))
+                .setMessage(getString(R.string.main_description))
+                .setPositiveButton(getString(R.string.understand)) { _, _ ->
+                    setDialogShown()
                 }
+                .show()
+        }
 
-        }, viewLifecycleOwner)
+
     }
 }

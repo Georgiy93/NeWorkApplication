@@ -1,6 +1,5 @@
 package ru.netology.neworkapplication.repository.events
 
-import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
@@ -8,15 +7,14 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import retrofit2.HttpException
 import ru.netology.neworkapplication.api.ApiService
-import ru.netology.neworkapplication.auth.AppAuth
 import ru.netology.neworkapplication.dao.EventDao
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.dto.EventRemoteKeyDao
 import ru.netology.neworkapplication.entity.EventEntity
 import ru.netology.neworkapplication.entity.EventRemoteKeyEntity
 import ru.netology.neworkapplication.error.ApiError
-
 import java.io.IOException
+
 
 
 @OptIn(ExperimentalPagingApi::class)
@@ -72,7 +70,7 @@ class EventRemoteMediator(
                 throw HttpException(result)
             }
             val data = result.body() ?: throw ApiError(
-                result.code(), result.message()
+                result.code()
             )
             appDb.withTransaction {
 
@@ -80,7 +78,7 @@ class EventRemoteMediator(
                     LoadType.REFRESH -> {
                         // postDao.clear()
 
-                        if (!data.isNullOrEmpty()) {
+                        if (data.isNotEmpty()) {
 
                             if (eventDao.isEmpty()) {
                                 eventRemoteKeyDao.insert(
@@ -108,7 +106,7 @@ class EventRemoteMediator(
                     }
 
                     LoadType.APPEND -> {
-                        if (!data.isNullOrEmpty()) {
+                        if (data.isNotEmpty()) {
                             eventRemoteKeyDao.insert(
                                 listOf(
 

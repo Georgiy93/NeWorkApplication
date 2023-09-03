@@ -1,35 +1,23 @@
 package ru.netology.neworkapplication.ui
 
-import android.app.Activity
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
-import android.view.*
-import androidx.activity.result.ActivityResultLauncher
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
-
-import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.neworkapplication.R
 import ru.netology.neworkapplication.databinding.FragmentNewPostBinding
-
-import ru.netology.neworkapplication.util.AndroidUtils
+import ru.netology.neworkapplication.util.AndroidUtils.setupPostMenu
 import ru.netology.neworkapplication.util.StringArg
 import ru.netology.neworkapplication.viewmodel.PostViewModel
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 
 @AndroidEntryPoint
 class NewPostFragment : Fragment() {
@@ -102,31 +90,7 @@ class NewPostFragment : Fragment() {
 
 
 
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_new_post, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                when (menuItem.itemId) {
-                    R.id.save -> {
-                        fragmentBinding?.let {
-
-
-                        viewModel.changeContent(it.edit.text.toString())
-                            viewModel.save()
-                            AndroidUtils.hideKeyboard(requireView())
-                        }
-                        parentFragmentManager.commit {
-                            replace(R.id.container, FeedFragment())
-                            addToBackStack(null)
-                        }
-                        true
-                    }
-                    else -> false
-                }
-
-        }, viewLifecycleOwner)
+        setupPostMenu(this, viewLifecycleOwner, viewModel)
         binding.clear.setOnClickListener {
             viewModel.clearPhoto()
         }

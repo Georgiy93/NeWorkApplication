@@ -1,6 +1,6 @@
+
 package ru.netology.neworkapplication.repository.events
 
-import android.util.Log
 import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -28,12 +28,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 
+
 @Singleton
 class EventRepositoryImpl @Inject constructor(
     private val eventDao: EventDao,
     private val apiService: ApiService,
-    private val eventRemoteKeyDao: EventRemoteKeyDao,
-    private val appDb: AppDb,
+    eventRemoteKeyDao: EventRemoteKeyDao,
+    appDb: AppDb,
 
 
     ) : EventRepository {
@@ -62,10 +63,10 @@ class EventRepositoryImpl @Inject constructor(
 
             val response = apiService.getEventsAll()
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
 
 
             eventDao.insert(body.toEntity())
@@ -84,10 +85,10 @@ class EventRepositoryImpl @Inject constructor(
 
             val response = apiService.getEventNewer(id)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             eventDao.insert(body.toEntity())
             emit(body.size)
         }
@@ -100,10 +101,10 @@ class EventRepositoryImpl @Inject constructor(
 
             val response = apiService.saveEvent(event)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             eventDao.insert(EventEntity.fromDto(body))
             return body
         } catch (e: IOException) {
@@ -114,22 +115,22 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveEventWithAttachment(event: Event, upload: MediaModel): Event {
+    override suspend fun saveEventWithAttachment(event: Event, mediaParam: MediaModel): Event {
         try {
 
 
-            val media = upload(upload)
+            val media = upload(mediaParam)
 
 
             val eventWithAttachment =
                 event.copy(attachment = Attachment(media.url, AttachmentType.IMAGE))
 
-            val response = apiService.saveEvent(eventWithAttachment ?: event)
+            val response = apiService.saveEvent(eventWithAttachment)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             eventDao.insert(EventEntity.fromDto(body))
             return body
         } catch (e: IOException) {
@@ -178,11 +179,10 @@ class EventRepositoryImpl @Inject constructor(
 
             val response = apiService.getEvent(id)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
 
-            return body
+            return response.body() ?: throw ApiError(response.code())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -197,13 +197,11 @@ class EventRepositoryImpl @Inject constructor(
 
             val response = apiService.userAll()
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
 
-
-            return body
+            return response.body() ?: throw ApiError(response.code())
 
         } catch (e: IOException) {
             throw NetworkError
@@ -218,9 +216,9 @@ class EventRepositoryImpl @Inject constructor(
 
             val response = apiService.removeParticipantById(id)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             eventDao.insert(EventEntity.fromDto(body))
             return body
         } catch (e: IOException) {
@@ -242,10 +240,10 @@ class EventRepositoryImpl @Inject constructor(
             )
             val response = apiService.upload(part)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            return response.body() ?: throw ApiError(response.code(), response.message())
+            return response.body() ?: throw ApiError(response.code())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
