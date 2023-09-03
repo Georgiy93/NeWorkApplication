@@ -13,7 +13,15 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-
+      - name: Install and run dos2unix
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dos2unix
+          dos2unix ./gradlew
+      - name: Установка Node 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
       - name: Build
         run: |
           chmod +x ./gradlew
