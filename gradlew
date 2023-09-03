@@ -18,7 +18,11 @@
 
 ##############################################################################
 ##
-##  Gradle start up script for UN*X
+##
+Gradle start
+up script
+for
+UN *X
 ##
 ##############################################################################
 
@@ -34,7 +38,7 @@ link =
 if expr "$link" : '/.*' > /dev/
 null;
 then
-        PRG = "$link";
+        PRG = "$link"
 else
 PRG =
 `dirname "$PRG"`"/$link"
@@ -48,13 +52,14 @@ cd "$SAVED" >/dev/
 null
 
         APP_NAME = "Gradle"
-APP_BASE_NAME=`basename "$0"`
+APP_BASE_NAME =
+`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+DEFAULT_JVM_OPTS = '"-Xmx64m" "-Xms64m"'
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
-MAX_FD="maximum"
+MAX_FD = "maximum"
 
 warn () {
     echo "$*"
@@ -77,24 +82,25 @@ nonstop = false
 case "`uname`"
 in
         CYGWIN
-*)
-cygwin = true
-Darwin*;;
-darwin = true
+* )
+cygwin = true;;
+Darwin* )
+darwin = true;;
 MINGW* )
-msys = true
+msys = true;;
 NONSTOP* )
-nonstop = true
+nonstop = true;;
 esac
 
         CLASSPATH = $APP_HOME / gradle / wrapper / gradle - wrapper.jar
 
 
 # Determine the Java command to use to start the JVM.
-if [ -n "$JAVA_HOME" ] ; then
-    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
-        # IBM's JDK on AIX uses strange locations for the executables
-        JAVACMD="$JAVA_HOME/jre/sh/java"
+if [ -n "$JAVA_HOME" ]; then
+if [ -x "$JAVA_HOME/jre/sh/java" ];
+then
+# IBM's JDK on AIX uses strange locations for the executables
+        JAVACMD = "$JAVA_HOME/jre/sh/java"
     else
         JAVACMD="$JAVA_HOME/bin/java"
     fi
@@ -136,16 +142,24 @@ fi
 # For Cygwin or MSYS, switch paths to Windows format before running java
 if [ "$cygwin" = "true" -o "$msys" = "true" ] ; then
     APP_HOME=`cygpath --path --mixed "$APP_HOME"`
-    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+CLASSPATH =
+`cygpath --path --mixed "$CLASSPATH"`
 
-    JAVACMD=`cygpath --unix "$JAVACMD"`
+JAVACMD =
+`cygpath --unix "$JAVACMD"`
 
-    # We build the pattern for arguments to be converted via cygpath
-    ROOTDIRSRAW=`find -L / -maxdepth 1 -mindepth 1 -type d 2>/dev/null`
-    SEP=""
-    for dir in $ROOTDIRSRAW ; do
-        ROOTDIRS="$ROOTDIRS$SEP$dir"
-        SEP="|"
+# We build the pattern for arguments to be converted via cygpath
+ROOTDIRSRAW =
+`find -L / -maxdepth 1 -mindepth 1 -
+type d
+2>/dev/null`
+SEP = ""
+for
+dir in
+$ROOTDIRSRAW;
+do
+ROOTDIRS = "$ROOTDIRS$SEP$dir"
+SEP = "|"
 done
         OURCYGPATTERN = "(^($ROOTDIRS))"
 # Add a user-defined pattern to the cygpath arguments
@@ -183,16 +197,16 @@ expr $i
 done
 case
 $i in
-0) set --;
-1) set -- "$args0";
-2) set -- "$args0" "$args1";
-3) set -- "$args0" "$args1" "$args2";
-4) set -- "$args0" "$args1" "$args2" "$args3";
-5) set -- "$args0" "$args1" "$args2" "$args3" "$args4";
-6) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5";
-7) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6";
-8) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7";
-9) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" "$args8";
+0) set --;;
+1) set -- "$args0";;
+2) set -- "$args0" "$args1";;
+3) set -- "$args0" "$args1" "$args2";;
+4) set -- "$args0" "$args1" "$args2" "$args3";;
+5) set -- "$args0" "$args1" "$args2" "$args3" "$args4";;
+6) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5";;
+7) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6";;
+8) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7";;
+9) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" "$args8";;
 esac
         fi
 
@@ -205,7 +219,7 @@ save() {
     "$i" | sed
     "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/";
     done
-            echo
+    echo
     " "
 }
 
