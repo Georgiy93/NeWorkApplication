@@ -68,14 +68,16 @@ die () {
 }
 
 # OS specific support (must be 'true' or 'false').
-cygwin=false
-msys=false
-darwin=false
-nonstop=false
-case "`uname`" in
-  CYGWIN* )
+cygwin = false
+msys = false
+darwin = false
+nonstop = false
+case "`uname`"
+in
+        CYGWIN
+* )
 cygwin = true
-Darwin* )
+Darwin*;;
 darwin = true
 MINGW* )
 msys = true
