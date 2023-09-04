@@ -6,7 +6,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:padding="@dimen/common_spacing">
+    android:padding="@dimen/common_spacing"
+    tools:ignore="UseCompoundDrawables">
 
     <ImageView
         android:id="@+id/participantAvatar"

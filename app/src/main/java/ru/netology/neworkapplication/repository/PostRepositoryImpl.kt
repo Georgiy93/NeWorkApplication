@@ -1,6 +1,5 @@
 package ru.netology.neworkapplication.repository
 
-import android.util.Log
 import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -11,7 +10,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
 import ru.netology.neworkapplication.db.AppDb
 import ru.netology.neworkapplication.api.ApiService
-import ru.netology.neworkapplication.auth.AppAuth
+
 import ru.netology.neworkapplication.dao.PostDao
 import ru.netology.neworkapplication.dto.*
 
@@ -31,13 +30,14 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 @Singleton
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
     private val apiService: ApiService,
-    private val postRemoteKeyDao: PostRemoteKeyDao,
-    private val appDb: AppDb,
-    private val appAuth: AppAuth,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb,
+
 
     ) : PostRepository {
     @OptIn(ExperimentalPagingApi::class)
@@ -66,10 +66,10 @@ class PostRepositoryImpl @Inject constructor(
             val response = apiService.getAll()
 
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
 
 
             postDao.insert(body.toEntity())
@@ -87,10 +87,10 @@ class PostRepositoryImpl @Inject constructor(
 
             val response = apiService.getNewer(id)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             postDao.insert(body.toEntity())
             emit(body.size)
         }
@@ -104,10 +104,10 @@ class PostRepositoryImpl @Inject constructor(
             val response = apiService.save(post)
 
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             postDao.insert(PostEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
@@ -117,23 +117,23 @@ class PostRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveWithAttachment(post: Post, upload: MediaModel) {
+    override suspend fun saveWithAttachment(post: Post, mediaParam: MediaModel) {
         try {
 
 
-            val media = upload(upload)
+            val media = upload(mediaParam)
 
 
             val postWithAttachment =
                 post.copy(attachment = Attachment(media.url, AttachmentType.IMAGE))
 
-            val response = apiService.save(postWithAttachment ?: post)
+            val response = apiService.save(postWithAttachment)
 
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code())
             postDao.insert(PostEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
@@ -182,10 +182,11 @@ class PostRepositoryImpl @Inject constructor(
             val response = apiService.getPost(id)
 
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            return body // Returns the post as DTO
+            return response.body() ?: throw ApiError(
+                response.code()
+            )
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -205,10 +206,10 @@ class PostRepositoryImpl @Inject constructor(
             )
             val response = apiService.upload(part)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code())
             }
 
-            return response.body() ?: throw ApiError(response.code(), response.message())
+            return response.body() ?: throw ApiError(response.code())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {

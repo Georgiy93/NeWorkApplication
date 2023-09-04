@@ -29,7 +29,8 @@
                 android:background="@android:color/transparent"
                 android:hint="Content"
                 android:inputType="textMultiLine"
-                android:padding="@dimen/common_spacing" />
+                android:padding="@dimen/common_spacing"
+                tools:ignore="Autofill,HardcodedText" />
 
 
             <FrameLayout

@@ -12,7 +12,7 @@ interface EventRepository {
 
     fun getEventNewer(id: Long): Flow<Int>
     suspend fun saveEvent(event: Event): Event
-    suspend fun saveEventWithAttachment(event: Event, media: MediaModel): Event
+    suspend fun saveEventWithAttachment(event: Event, mediaParam: MediaModel): Event
 
     suspend fun getEvent(id: Long): Event
     suspend fun removeEventById(id: Long)
