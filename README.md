@@ -16,3 +16,6 @@ NeWorkApp — это приложение для профессионально�
 
 ## Скриншоты приложения
 ![Скриншот мероприятий](https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/Event.png)
+![Скриншот создания мероприятия](https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/EventCreate.png)
+![Скриншот аутентификации в приложении](https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/LogIn.png)
+![Скриншот постов пользователя](https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/UserPost.png)
