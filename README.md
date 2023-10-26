@@ -16,9 +16,9 @@ NeWorkApp — это приложение для профессионально�
 
 ## Скриншоты приложения
 <p align="center">
-  <img src="https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/LogIn.png" alt="Скриншот аутентификации в приложении" style="width: 250px; height: 250px;"/>
-  <img src="https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/Event.png" alt="Скриншот мероприятий" style="width: 250px; height: 250px;"/>
+  <img src="https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/LogIn.png" alt="Скриншот аутентификации в приложении" style="width: 600px; height: 800px;"/>
+  <img src="https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/Event.png" alt="Скриншот мероприятий" style="width: 600px; height: 800px;"/>
   
-  <img src="https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/UserPost.png" alt="Скриншот постов пользователя" style="width: 250px; height: 250px;"/>
+  <img src="https://github.com/Georgiy93/NeWorkApplication/blob/master/screenshot/UserPost.png" alt="Скриншот постов пользователя" style="width: 600px; height: 800px;"/>
 </p>
 
